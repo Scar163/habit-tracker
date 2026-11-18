@@ -58,6 +58,22 @@ nav button.a{opacity:1;color:var(--ac)}
 .bar{height:8px;border-radius:4px;background:rgba(255,255,255,.15);margin-top:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ac)}
 .empty{text-align:center;opacity:.7;padding:22px}
 h3{margin:16px 4px 6px;font-size:15px;opacity:.85}
+.icb{width:36px;height:36px;border-radius:10px;border:0;background:rgba(255,255,255,.12);font-size:20px;padding:0;flex:none}
+.add .icb{background:rgba(255,255,255,.14);font-size:22px;padding:0;color:#fff}
+.ico{font-size:22px;flex:none}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.pk{background:#1b1b2b;width:100%;max-width:520px;max-height:80vh;overflow-y:auto;border-radius:18px 18px 0 0;padding:14px}
+.ig{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.ig button{background:rgba(255,255,255,.06);border:0;border-radius:10px;font-size:24px;padding:6px 0}
+.lg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px}
+.chev{opacity:.5;font-size:20px}
+.ok{color:#4ade80}.no{color:#f87171}
+.dayrow{display:flex;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.dayrow:last-child{border:0}
+.wk{display:flex;align-items:center;justify-content:space-between;margin:4px 0 10px}
+.pct{font-size:11px;opacity:.85;font-weight:400}
+.week button.has b{font-size:16px}
+[dir=rtl] .top,[dir=rtl] .row{direction:rtl}
 </style></head><body>
 <div id="bg"></div>
 <div id="app"><main id="m"></main>
@@ -108,15 +124,52 @@ const SUG=[
 const sg=id=>SUG.find(x=>x.id==id);
 const K='habit-tracker-v2';
 let D;try{D=JSON.parse(localStorage.getItem(K))}catch(e){}
-if(!D){D={theme:0,lang:(navigator.language||'ru').startsWith('ru')?'ru':'en',habits:['water','workout','book','meditate','food'].map(k=>({k,log:{}})),goals:[]}}
-let tab='home',sel=null,edit=false,sugF='all';
-const T=()=>L[D.lang];
+if(!D){D={theme:0,lang:(navigator.language||'en').slice(0,2),habits:['water','workout','book','meditate','food'].map(k=>({k,log:{}})),goals:[]}}
+let tab='home',sel=null,edit=false,sugF='all',wk=0,sd=null,gp=[],pk=null,ni='⭐',ng='🎯';
+const LANGS=[['ru','Русский'],['en','English'],['zh','中文'],['es','Español'],['hi','हिन्दी'],['ar','العربية'],['fr','Français'],['pt','Português'],['de','Deutsch'],['ja','日本語'],['tr','Türkçe'],['uk','Українська'],['ko','한국어'],['it','Italiano']];
+if(!LANGS.some(l=>l[0]==D.lang))D.lang='en';
+const KEYS='app today habits home stats goals prof addH addG noH noG left streak days best week theme lang backup save load del replace bad sugBtn sugTitle all rel n0 n1 n2 n3 n4 dw dk db dm df subAdd done missed weekSum pickIcon'.split(' ');
+const P={
+zh:`习惯追踪|今天|我的习惯|主页|统计|目标|我的|新习惯…|新目标…|添加你的第一个习惯|还没有目标|剩余|连续|天|最长连续|近7天|背景|语言|数据|保存备份|载入备份|删除？|替换当前数据？|文件无效|推荐习惯|习惯灵感|全部|证据|从小事开始|好的开始！|快完成了！|做得好！|完美！|喝水|锻炼|读书|冥想|健康饮食|新子项…|已完成|未完成|本周总结|选择图标`,
+es:`Hábitos|Hoy|Mis hábitos|Inicio|Estadísticas|Metas|Perfil|Nuevo hábito…|Nueva meta…|Añade tu primer hábito|Aún no hay metas|Pendientes|racha|d|Mejor racha|Últimos 7 días|Fondo|Idioma|Datos|Guardar copia|Cargar copia|¿Eliminar?|¿Reemplazar los datos actuales?|Archivo no válido|Sugerir un hábito|Ideas de hábitos|Todos|Evidencia|Pasos pequeños|¡Buen comienzo!|¡Casi listo!|¡Buen trabajo!|¡Perfecto!|Beber agua|Entrenar|Leer un libro|Meditar|Comer sano|Nuevo subelemento…|Hecho|No hecho|Resumen de la semana|Elige un icono`,
+hi:`आदत ट्रैकर|आज|मेरी आदतें|होम|आँकड़े|लक्ष्य|प्रोफ़ाइल|नई आदत…|नया लक्ष्य…|अपनी पहली आदत जोड़ें|अभी कोई लक्ष्य नहीं|बाकी|लगातार|दिन|सबसे लंबी लकीर|पिछले 7 दिन|पृष्ठभूमि|भाषा|डेटा|बैकअप सहेजें|बैकअप लोड करें|हटाएं?|मौजूदा डेटा बदलें?|अमान्य फ़ाइल|आदत सुझाएं|आदत के विचार|सभी|प्रमाण|छोटे कदम|अच्छी शुरुआत!|लगभग हो गया!|बहुत बढ़िया!|परफ़ेक्ट!|पानी पीना|कसरत|किताब पढ़ना|ध्यान|स्वस्थ भोजन|नया उप-आइटम…|हो गया|नहीं हुआ|सप्ताह का सार|आइकन चुनें`,
+ar:`متتبع العادات|اليوم|عاداتي|الرئيسية|الإحصاءات|الأهداف|الملف|عادة جديدة…|هدف جديد…|أضف عادتك الأولى|لا توجد أهداف بعد|المتبقي|سلسلة|يوم|أطول سلسلة|آخر 7 أيام|الخلفية|اللغة|البيانات|حفظ نسخة|تحميل نسخة|حذف؟|استبدال البيانات الحالية؟|ملف غير صالح|اقتراح عادة|أفكار للعادات|الكل|الدليل|خطوات صغيرة|بداية جيدة!|اقتربت!|عمل رائع!|ممتاز!|شرب الماء|تمرين|قراءة كتاب|تأمل|أكل صحي|عنصر فرعي جديد…|تم|لم يتم|ملخص الأسبوع|اختر أيقونة`,
+fr:`Suivi d'habitudes|Aujourd'hui|Mes habitudes|Accueil|Stats|Objectifs|Profil|Nouvelle habitude…|Nouvel objectif…|Ajoute ta première habitude|Aucun objectif|Restant|série|j|Meilleure série|7 derniers jours|Fond|Langue|Données|Enregistrer une copie|Charger une copie|Supprimer ?|Remplacer les données actuelles ?|Fichier invalide|Suggérer une habitude|Idées d'habitudes|Tout|Preuves|Petits pas|Bon début !|Presque !|Bravo !|Parfait !|Boire de l'eau|Entraînement|Lire un livre|Méditer|Manger sain|Nouvel élément…|Fait|Pas fait|Bilan de la semaine|Choisis une icône`,
+pt:`Rastreador de hábitos|Hoje|Meus hábitos|Início|Estatísticas|Metas|Perfil|Novo hábito…|Nova meta…|Adicione seu primeiro hábito|Ainda sem metas|Restam|sequência|d|Melhor sequência|Últimos 7 dias|Fundo|Idioma|Dados|Salvar cópia|Carregar cópia|Excluir?|Substituir os dados atuais?|Arquivo inválido|Sugerir hábito|Ideias de hábitos|Todos|Evidência|Pequenos passos|Bom começo!|Quase lá!|Bom trabalho!|Perfeito!|Beber água|Treinar|Ler um livro|Meditar|Comer saudável|Novo subitem…|Feito|Não feito|Resumo da semana|Escolha um ícone`,
+de:`Gewohnheiten|Heute|Meine Gewohnheiten|Start|Statistik|Ziele|Profil|Neue Gewohnheit…|Neues Ziel…|Füge deine erste Gewohnheit hinzu|Noch keine Ziele|Offen|Serie|T|Beste Serie|Letzte 7 Tage|Hintergrund|Sprache|Daten|Kopie speichern|Kopie laden|Löschen?|Aktuelle Daten ersetzen?|Ungültige Datei|Gewohnheit vorschlagen|Ideen für Gewohnheiten|Alle|Belege|Kleine Schritte|Guter Start!|Fast geschafft!|Gut gemacht!|Perfekt!|Wasser trinken|Training|Ein Buch lesen|Meditieren|Gesund essen|Neuer Unterpunkt…|Erledigt|Nicht erledigt|Wochenbilanz|Symbol wählen`,
+ja:`習慣トラッカー|今日|マイ習慣|ホーム|統計|目標|プロフィール|新しい習慣…|新しい目標…|最初の習慣を追加|目標はまだありません|残り|連続|日|最長連続|直近7日|背景|言語|データ|バックアップ保存|バックアップ読込|削除しますか？|現在のデータを置き換えますか？|無効なファイル|習慣を提案|習慣のアイデア|すべて|根拠|小さな一歩|いいスタート！|あと少し！|よくできました！|完璧！|水を飲む|運動|読書|瞑想|健康的な食事|新しい項目…|完了|未完了|週のまとめ|アイコンを選択`,
+tr:`Alışkanlık Takibi|Bugün|Alışkanlıklarım|Ana sayfa|İstatistik|Hedefler|Profil|Yeni alışkanlık…|Yeni hedef…|İlk alışkanlığını ekle|Henüz hedef yok|Kalan|seri|g|En iyi seri|Son 7 gün|Arka plan|Dil|Veri|Yedek kaydet|Yedek yükle|Silinsin mi?|Mevcut veriler değiştirilsin mi?|Geçersiz dosya|Alışkanlık öner|Alışkanlık fikirleri|Tümü|Kanıt|Küçük adımlar|İyi başlangıç!|Neredeyse!|Harika iş!|Mükemmel!|Su iç|Antrenman|Kitap oku|Meditasyon|Sağlıklı beslen|Yeni alt öğe…|Yapıldı|Yapılmadı|Hafta özeti|Simge seç`,
+uk:`Трекер звичок|Сьогодні|Мої звички|Головна|Статистика|Цілі|Профіль|Нова звичка…|Нова ціль…|Додай першу звичку|Цілей поки немає|Залишилось|серія|дн.|Найкраща серія|За 7 днів|Фон|Мова|Дані|Зберегти копію|Завантажити копію|Видалити?|Замінити поточні дані?|Невірний файл|Підібрати звичку|Ідеї звичок|Усі|Докази|Маленькі кроки|Гарний початок!|Майже готово!|Чудова робота!|Ідеально!|Пити воду|Тренування|Читати книгу|Медитація|Здорова їжа|Нова підціль…|Зроблено|Не зроблено|Підсумок тижня|Обери іконку`,
+ko:`습관 트래커|오늘|내 습관|홈|통계|목표|프로필|새 습관…|새 목표…|첫 습관을 추가하세요|아직 목표가 없어요|남음|연속|일|최장 연속|최근 7일|배경|언어|데이터|백업 저장|백업 불러오기|삭제할까요?|현재 데이터를 바꿀까요?|잘못된 파일|습관 추천|습관 아이디어|전체|근거|작은 한 걸음|좋은 시작!|거의 다 왔어요!|잘했어요!|완벽해요!|물 마시기|운동|책 읽기|명상|건강한 식사|새 하위 항목…|완료|미완료|주간 요약|아이콘 선택`,
+it:`Tracker abitudini|Oggi|Le mie abitudini|Home|Statistiche|Obiettivi|Profilo|Nuova abitudine…|Nuovo obiettivo…|Aggiungi la tua prima abitudine|Ancora nessun obiettivo|Restano|serie|g|Serie migliore|Ultimi 7 giorni|Sfondo|Lingua|Dati|Salva copia|Carica copia|Eliminare?|Sostituire i dati attuali?|File non valido|Suggerisci un'abitudine|Idee di abitudini|Tutto|Evidenze|Piccoli passi|Buon inizio!|Quasi fatto!|Ottimo lavoro!|Perfetto!|Bere acqua|Allenamento|Leggere un libro|Meditare|Mangiare sano|Nuovo sotto-elemento…|Fatto|Non fatto|Riepilogo settimana|Scegli un'icona`
+};
+function mk(s){const p=s.split('|'),o={};KEYS.forEach((k,i)=>o[k]=p[i]);o.m=[o.n0,o.n1,o.n2,o.n3,o.n4];o.m2=['','','','',''];o.def={water:o.dw,workout:o.dk,book:o.db,meditate:o.dm,food:o.df};return o}
+Object.keys(P).forEach(k=>L[k]=mk(P[k]));
+L.ru.subAdd='Новая подцель…';L.ru.done='Сделано';L.ru.missed='Не сделано';L.ru.weekSum='Итог недели';L.ru.pickIcon='Выбери иконку';
+L.en.subAdd='New sub-item…';L.en.done='Done';L.en.missed='Not done';L.en.weekSum='Week summary';L.en.pickIcon='Pick an icon';
+const ICONS=[
+[['Здоровье','Health'],['❤️','💊','🥛','🍎','🛏️','🩺','🪷','💧']],
+[['Физическое развитие','Fitness'],['🏋️','👟','🚴','🧘','💪','⚽','🏊','🏀']],
+[['Духовное развитие','Spirit'],['🧠','☯️','🪷','📖','🙏','🏯','🌳','🕉️']],
+[['Работа и бизнес','Work'],['💼','💻','📈','🤝','📊','🎯','💰','⏳']],
+[['Обучение и знания','Learning'],['📖','🎧','▶️','💡','🌍','📜','🧩','🔤']],
+[['Продуктивность','Productivity'],['📋','📅','⏱️','⌛','⚙️','✅','⭐','🔥']],
+[['Отдых и развлечения','Leisure'],['🎮','📺','🎬','🎵','📷','✈️','🏝️','🍹']],
+[['Дом и быт','Home'],['🏠','🧹','🧺','🛒','🍲','🪴','🧼','🔧']],
+[['Питание','Food'],['🥗','🥩','🍔','🍕','🍟','☕','🍵','🧁']],
+[['Финансы','Finance'],['👛','💳','🐷','📈','🏦','💰','🪙','📊']],
+[['Путешествия','Travel'],['✈️','🌍','🗺️','🧳','📷','🧭','🏔️','🏝️']],
+[['Творчество и хобби','Creativity'],['🎨','🎸','📷','🖌️','🧶','🌱','🧩','⭐']],
+[['Эмоции и настроение','Mood'],['😊','☀️','🏆','❤️','⭐','🌸','☁️','🌙']],
+[['Напоминания и важное','Reminders'],['🔔','📅','⏰','📌','✉️','🎁','🎂','⚠️']]
+];
+const T=()=>Object.assign({},L.en,L[D.lang]||{});
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(D))}catch(e){}};
 const z=n=>String(n).padStart(2,'0');
 const key=d=>d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());
 const ago=n=>{const d=new Date();d.setDate(d.getDate()-n);return key(d)};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const hn=h=>h.s?sg(h.s).n[D.lang=='ru'?0:1]:h.k?T().def[h.k]:h.name, hi=h=>h.s?sg(h.s).i:h.k?ICON[h.k]:(h.i||'⭐');
+const hn=h=>h.s?sg(h.s).n[D.lang=='ru'?0:1]:h.k?T().def[h.k]:h.name, hi=h=>h.i||(h.s?sg(h.s).i:h.k?ICON[h.k]:'⭐');
 const streak=h=>{let n=0,i=h.log[ago(0)]?0:1;while(h.log[ago(i)]){n++;i++}return n};
 function best(h){let b=0,c=0;Object.keys(h.log).sort().forEach((k,i,a)=>{const p=a[i-1];c=(p&&(new Date(k)-new Date(p))==864e5)?c+1:1;b=Math.max(b,c)});return b}
 function applyTheme(){
@@ -125,21 +178,28 @@ function applyTheme(){
   document.getElementById('bg').style.background=`url("${D.theme+1}.jpg") center/cover no-repeat, ${t.g}`;
 }
 function weekDays(){const d=new Date(),w=(d.getDay()+6)%7;return[...Array(7)].map((_,i)=>{const x=new Date();x.setDate(d.getDate()-w+i);return x})}
+function wkDays(off){const d=new Date(),w=(d.getDay()+6)%7;return[...Array(7)].map((_,i)=>{const x=new Date();x.setDate(d.getDate()-w+i+off*7);return x})}
+const cnt=(h,k,tk)=>k<=tk&&(!h.c||k>=h.c||h.log[k]);
+const gl=()=>gp.reduce((l,i)=>l[i].c||(l[i].c=[]),D.goals);
+const gTitle=()=>{let l=D.goals,n='';gp.forEach(i=>{n=l[i].name;l=l[i].c||[]});return n};
+const icoBtn=(ic,target,on)=>on?`<button class="icb" data-pk="${target}">${ic}</button>`:`<span class="ico">${ic}</span>`;
+const fd=(d,o)=>d.toLocaleDateString(D.lang,o);
+function pickerHTML(){const t=T(),r=D.lang=='ru'?0:1;return `<div class="ov"><div class="pk"><div class="sect"><b>${t.pickIcon}</b><button class="x" data-pc="1" style="color:#fff">✕</button></div>${ICONS.map(([n,l])=>`<h3>${n[r]}</h3><div class="ig">${l.map(e=>`<button data-pi="${e}">${e}</button>`).join('')}</div>`).join('')}</div></div>`}
 function render(){
-  const t=T();document.documentElement.lang=D.lang;document.title=t.app;applyTheme();
+  const t=T();document.documentElement.lang=D.lang;document.documentElement.dir=D.lang=='ar'?'rtl':'ltr';document.title=t.app;applyTheme();
   const tk=key(new Date());if(!sel)sel=tk;
   let h='';
   if(tab=='home'){
     const n=D.habits.length,dn=D.habits.filter(x=>x.log[sel]).length,p=n?Math.round(dn/n*100):0;
     const mi=Math.min(4,Math.floor(p/25)),R=56,C=2*Math.PI*R;
-    h+=`<div class="top"><button class="ib" data-a="edit">☰</button><h1>${t.app}</h1><button class="ib" data-tab="prof">⚙</button></div>
+    h+=`<div class="top"><button class="ib" data-a="edit">${edit?'✓':'☰'}</button><h1>${t.app}</h1><button class="ib" data-tab="prof">⚙</button></div>
     <div class="hero"><div class="ring"><svg width="132" height="132"><circle cx="66" cy="66" r="${R}" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="10"/><circle cx="66" cy="66" r="${R}" fill="none" stroke="var(--ac)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C*p/100} ${C}"/></svg><div class="tx"><b>${p}%</b><span>${t.today}</span></div></div>
     <div><h2>${t.m[mi]}</h2><p>${t.m2[mi]}</p></div></div><div class="week">`;
-    weekDays().forEach(d=>{const k=key(d);h+=`<button data-d="${k}" class="${k==sel?'sel':''}" ${k>tk?'disabled':''}>${d.toLocaleDateString(D.lang,{weekday:'short'})}<b>${d.getDate()}</b></button>`});
+    wkDays(0).forEach(d=>{const k=key(d);h+=`<button data-d="${k}" class="${k==sel?'sel':''}" ${k>tk?'disabled':''}>${fd(d,{weekday:'short'})}<b>${d.getDate()}</b></button>`});
     h+=`</div><div class="sect"><span>${t.habits}</span><span>${dn}/${n}</span></div><div class="list glass">`;
     if(!n)h+=`<div class="empty">${t.noH}</div>`;
-    D.habits.forEach((x,i)=>{h+=`<div class="row"><span style="font-size:22px">${hi(x)}</span><div class="n">${esc(hn(x))}<small>${t.streak}: ${streak(x)} ${t.days}</small></div>${edit?`<button class="x" data-dh="${i}">✕</button>`:''}<button class="chk ${x.log[sel]?'on':''}" data-h="${i}">${x.log[sel]?'✓':''}</button></div>`});
-    h+=`<form class="add" data-f="h"><input placeholder="${t.addH}" autocomplete="off"><button>+</button></form></div>
+    D.habits.forEach((x,i)=>{h+=`<div class="row">${icoBtn(hi(x),'h:'+i,edit)}<div class="n">${esc(hn(x))}<small>${t.streak}: ${streak(x)} ${t.days}</small></div>${edit?`<button class="x" data-dh="${i}">✕</button>`:''}<button class="chk ${x.log[sel]?'on':''}" data-h="${i}">${x.log[sel]?'✓':''}</button></div>`});
+    h+=`<form class="add" data-f="h"><button type="button" class="icb" data-pk="nh">${ni}</button><input placeholder="${t.addH}" autocomplete="off"><button>+</button></form></div>
     <button class="btn" style="width:100%;margin-top:12px" data-tab="sug">💡 ${t.sugBtn}</button>`;
   }else if(tab=='sug'){
     const ru=D.lang=='ru',lv=ru?['','Слабая','Средняя','Хорошая']:['','Weak','Medium','Good'];
@@ -152,39 +212,65 @@ function render(){
       <div style="font-size:12px;opacity:.65;margin-top:6px">${t.rel}: ${lv[x.s]} · <a href="${x.u}" target="_blank" rel="noopener" style="color:var(--ac)">${x.a[ru?0:1]}</a></div></div>`});
     h+=`<div style="font-size:12px;opacity:.6;margin:8px 4px 16px">${t.disc}</div>`;
   }else if(tab=='stats'){
-    h+=`<div class="top"><span style="width:40px"></span><h1>${t.stats}</h1><span style="width:40px"></span></div><div class="list glass">`;
+    const days=wkDays(wk),keys=days.map(key);
+    if(!sd||!keys.includes(sd))sd=keys.includes(tk)?tk:keys[0];
+    const dp=k=>{const hs=D.habits.filter(x=>cnt(x,k,tk));return[hs.filter(x=>x.log[k]).length,hs.length]};
+    let td=0,tc=0;keys.forEach(k=>{const[a,b]=dp(k);td+=a;tc+=b});
+    const wp=tc?Math.round(td/tc*100):0;
+    h+=`<div class="top"><span style="width:40px"></span><h1>${t.stats}</h1><span style="width:40px"></span></div>
+    <div class="wk"><button class="ib" data-wk="-1">‹</button><b>${fd(days[0],{day:'numeric',month:'short'})} – ${fd(days[6],{day:'numeric',month:'short'})}</b><button class="ib" data-wk="1" ${wk>=0?'disabled style="opacity:.4"':''}>›</button></div><div class="week">`;
+    days.forEach((d,i)=>{const k=keys[i],[a,b]=dp(k);h+=`<button data-sd="${k}" class="${k==sd?'sel':''}" ${k>tk?'disabled':''}>${fd(d,{weekday:'short'})}<b>${d.getDate()}</b><span class="pct">${b?Math.round(a/b*100)+'%':'–'}</span></button>`});
+    const sdd=new Date(sd+'T12:00:00'),[da,db]=dp(sd);
+    h+=`</div><div class="sect"><span>${fd(sdd,{weekday:'long',day:'numeric',month:'long'})}</span><span>${da}/${db}</span></div><div class="list glass">`;
+    const hs=D.habits.filter(x=>cnt(x,sd,tk)),dn=hs.filter(x=>x.log[sd]),ms=hs.filter(x=>!x.log[sd]);
+    if(!hs.length)h+=`<div class="empty">–</div>`;
+    dn.forEach(x=>{h+=`<div class="dayrow"><span class="ok">✓</span><span class="ico">${hi(x)}</span><span style="flex:1">${esc(hn(x))}</span><small class="ok">${t.done}</small></div>`});
+    ms.forEach(x=>{h+=`<div class="dayrow"><span class="no">✗</span><span class="ico">${hi(x)}</span><span style="flex:1">${esc(hn(x))}</span><small class="no">${t.missed}</small></div>`});
+    h+=`</div><div class="sect" style="margin-top:14px"><span>${t.weekSum}</span><span>${wp}%</span></div><div class="list glass">`;
     if(!D.habits.length)h+=`<div class="empty">${t.noH}</div>`;
-    D.habits.forEach(x=>{let c=0;for(let i=0;i<7;i++)if(x.log[ago(i)])c++;
-      h+=`<div class="row"><span style="font-size:22px">${hi(x)}</span><div class="n">${esc(hn(x))}<small>${t.week}: ${c}/7 · ${t.best}: ${best(x)} ${t.days}</small><div class="bar"><i style="width:${c/7*100}%"></i></div></div></div>`});
+    D.habits.forEach(x=>{let c=0,n=0;keys.forEach(k=>{if(cnt(x,k,tk)){n++;if(x.log[k])c++}});
+      h+=`<div class="row"><span class="ico">${hi(x)}</span><div class="n">${esc(hn(x))}<small>${c}/${n} · ${t.best}: ${best(x)} ${t.days}</small><div class="bar"><i style="width:${n?c/n*100:0}%"></i></div></div></div>`});
     h+='</div>';
   }else if(tab=='goals'){
-    h+=`<div class="top"><span style="width:40px"></span><h1>${t.goals}</h1><span style="width:40px"></span></div>
-    <div class="sect"><span>${t.left}</span><span>${D.goals.filter(x=>!x.d).length}</span></div><div class="list glass">`;
-    if(!D.goals.length)h+=`<div class="empty">${t.noG}</div>`;
-    D.goals.forEach((x,i)=>{h+=`<div class="row ${x.d?'done':''}"><button class="chk ${x.d?'on':''}" data-g="${i}">${x.d?'✓':''}</button><div class="n">${esc(x.name)}</div><button class="x" data-dg="${i}">✕</button></div>`});
-    h+=`<form class="add" data-f="g"><input placeholder="${t.addG}" autocomplete="off"><button>+</button></form></div>`;
+    const L2=gl(),open=L2.filter(x=>!x.d).length;
+    h+=`<div class="top">${gp.length?`<button class="ib" data-gb="1">←</button>`:`<span style="width:40px"></span>`}<h1>${gp.length?esc(gTitle()):t.goals}</h1><button class="ib" data-a="edit">${edit?'✓':'☰'}</button></div>
+    <div class="sect"><span>${t.left}</span><span>${open}</span></div><div class="list glass">`;
+    if(!L2.length)h+=`<div class="empty">${t.noG}</div>`;
+    L2.forEach((x,i)=>{const c=x.c||[],cd=c.filter(y=>y.d).length;
+      h+=`<div class="row ${x.d?'done':''}"><button class="chk ${x.d?'on':''}" data-g="${i}">${x.d?'✓':''}</button>${icoBtn(x.i||'🎯','g:'+i,edit)}<div class="n" data-go="${i}" style="cursor:pointer">${esc(x.name)}${c.length?`<small>${cd}/${c.length}</small>`:''}</div>${edit?`<button class="x" data-dg="${i}">✕</button>`:`<span class="chev" data-go="${i}">›</span>`}</div>`});
+    h+=`<form class="add" data-f="g"><button type="button" class="icb" data-pk="ng">${ng}</button><input placeholder="${gp.length?t.subAdd:t.addG}" autocomplete="off"><button>+</button></form></div>`;
   }else{
     h+=`<div class="top"><span style="width:40px"></span><h1>${t.prof}</h1><span style="width:40px"></span></div>
     <h3>${t.theme}</h3><div class="themes glass">`;
     TH.forEach((x,i)=>{h+=`<button class="th ${i==D.theme?'on':''}" data-th="${i}" style="background:url('${i+1}.jpg') center/cover,${x.g}">${x.n[D.lang=='ru'?0:1]}</button>`});
-    h+=`</div><div style="font-size:12px;opacity:.65;margin:4px">${t.hint}</div>
-    <h3>${t.lang}</h3><div class="seg glass"><button class="btn ${D.lang=='ru'?'':'g'}" data-l="ru">Русский</button><button class="btn ${D.lang=='en'?'':'g'}" data-l="en">English</button></div>
+    h+=`</div><h3>${t.lang}</h3><div class="lg glass">`+LANGS.map(([c,n])=>`<button class="btn ${D.lang==c?'':'g'}" data-l="${c}">${n}</button>`).join('')+`</div>
     <h3>${t.backup}</h3><div class="seg glass"><button class="btn g" data-a="save">${t.save}</button><button class="btn g" data-a="load">${t.load}</button></div><input type="file" id="file" accept=".json" hidden>`;
   }
+  if(pk)h+=pickerHTML();
   m.innerHTML=h;
   nav.innerHTML=[['home','🏠',t.home],['stats','📊',t.stats],['goals','🏆',t.goals],['prof','👤',t.prof]].map(([k,i,l])=>`<button data-tab="${k}" class="${tab==k?'a':''}"><i>${i}</i>${l}</button>`).join('');
 }
 const m=document.getElementById('m'),nav=document.getElementById('nav');
-document.getElementById('app').addEventListener('click',e=>{
-  const b=e.target.closest('button');if(!b)return;const d=b.dataset;
-  if(d.tab){tab=d.tab}
+const app=document.getElementById('app');
+function pick(e){const p=pk;pk=null;if(p=='nh')ni=e;else if(p=='ng')ng=e;else{const[t,i]=p.split(':');if(t=='h')D.habits[i].i=e;else gl()[i].i=e}}
+app.addEventListener('click',e=>{
+  if(e.target.classList&&e.target.classList.contains('ov')){pk=null;render();return}
+  const b=e.target.closest('button,[data-go]');if(!b)return;const d=b.dataset;
+  if(d.pi)pick(d.pi);
+  else if(d.pc)pk=null;
+  else if(d.pk)pk=d.pk;
+  else if(d.tab){tab=d.tab}
   else if(d.d)sel=d.d;
+  else if(d.sd)sd=d.sd;
+  else if(d.wk){wk=Math.min(0,wk+ +d.wk);sd=null}
   else if(d.sf)sugF=d.sf;
-  else if(d.add){if(!D.habits.some(y=>y.s==d.add||y.k==d.add))D.habits.push({s:d.add,log:{}})}
+  else if(d.add){if(!D.habits.some(y=>y.s==d.add||y.k==d.add))D.habits.push({s:d.add,log:{},c:key(new Date())})}
   else if(d.h!==undefined){const l=D.habits[d.h].log;l[sel]?delete l[sel]:l[sel]=1}
-  else if(d.g!==undefined)D.goals[d.g].d=!D.goals[d.g].d;
+  else if(d.go!==undefined)gp.push(+d.go);
+  else if(d.gb)gp.pop();
+  else if(d.g!==undefined){const x=gl()[d.g];x.d=!x.d}
   else if(d.dh!==undefined){if(confirm(T().del))D.habits.splice(d.dh,1)}
-  else if(d.dg!==undefined)D.goals.splice(d.dg,1);
+  else if(d.dg!==undefined){if(confirm(T().del))gl().splice(d.dg,1)}
   else if(d.th!==undefined)D.theme=+d.th;
   else if(d.l)D.lang=d.l;
   else if(d.a=='edit')edit=!edit;
@@ -193,16 +279,18 @@ document.getElementById('app').addEventListener('click',e=>{
   else return;
   save();render();
 });
-document.getElementById('app').addEventListener('submit',e=>{
+app.addEventListener('submit',e=>{
   e.preventDefault();const f=e.target,v=f.querySelector('input').value.trim();if(!v)return;
-  f.dataset.f=='h'?D.habits.push({name:v,log:{}}):D.goals.push({name:v,d:false});
+  if(f.dataset.f=='h'){D.habits.push({name:v,i:ni,log:{},c:key(new Date())});ni='⭐'}
+  else{gl().push({name:v,d:false,i:ng,c:[]});ng='🎯'}
   save();render();
 });
-document.getElementById('app').addEventListener('change',e=>{
+app.addEventListener('change',e=>{
   if(e.target.id!='file')return;const r=new FileReader();
-  r.onload=()=>{try{const j=JSON.parse(r.result);if(j.habits&&j.goals&&confirm(T().replace)){D=j;save();render()}}catch(x){alert(T().bad)}};
+  r.onload=()=>{try{const j=JSON.parse(r.result);if(j.habits&&j.goals&&confirm(T().replace)){D=j;if(!LANGS.some(l=>l[0]==D.lang))D.lang='en';save();render()}}catch(x){alert(T().bad)}};
   r.readAsText(e.target.files[0]);
 });
+D.habits.forEach(h=>{if(!h.c)h.c=key(new Date())});
 render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script></body></html>
