@@ -60,6 +60,7 @@ nav button.a{opacity:1;color:var(--ac)}
 h3{margin:16px 4px 6px;font-size:15px;opacity:.85}
 .icb{width:36px;height:36px;border-radius:10px;border:0;background:rgba(255,255,255,.12);font-size:20px;padding:0;flex:none}
 .add .icb{background:rgba(255,255,255,.14);font-size:22px;padding:0;color:#fff}
+.mb{background:none;border:0;color:#fff;opacity:.7;font-size:22px;padding:4px 8px;flex:none}
 .ico{font-size:22px;flex:none;display:inline-flex}
 .spi{display:inline-block;border-radius:22%;flex:none}
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;display:flex;align-items:flex-end;justify-content:center}
@@ -125,11 +126,11 @@ const SUG=[
 const sg=id=>SUG.find(x=>x.id==id);
 const K='habit-tracker-v2';
 let D;try{D=JSON.parse(localStorage.getItem(K))}catch(e){}
-if(!D){D={theme:0,lang:(navigator.language||'en').slice(0,2),habits:['water','workout','book','meditate','food'].map(k=>({k,log:{}})),goals:[]}}
-let tab='home',sel=null,edit=false,sugF='all',wk=0,sd=null,gp=[],pk=null,ni='sp:46',ng='sp:28';
+if(!D){D={theme:0,lang:(navigator.language||'en').slice(0,2),habits:[],goals:[]}}
+let tab='home',sel=null,edit=false,hd=null,mn=null,sugF='all',wk=0,sd=null,gp=[],pk=null,ni='sp:46',ng='sp:28';
 const LANGS=[['ru','Русский'],['en','English'],['zh','中文'],['es','Español'],['hi','हिन्दी'],['ar','العربية'],['fr','Français'],['pt','Português'],['de','Deutsch'],['ja','日本語'],['tr','Türkçe'],['uk','Українська'],['ko','한국어'],['it','Italiano']];
 if(!LANGS.some(l=>l[0]==D.lang))D.lang='en';
-const KEYS='app today habits home stats goals prof addH addG noH noG left streak days best week theme lang backup save load del replace bad sugBtn sugTitle all rel n0 n1 n2 n3 n4 dw dk db dm df subAdd done missed weekSum pickIcon'.split(' ');
+const KEYS='app today habits home stats goals prof addH addG noH noG left streak days best week theme lang backup save load del replace bad sugBtn sugTitle all rel n0 n1 n2 n3 n4 dw dk db dm df subAdd done missed weekSum pickIcon chIcon rename remove noSub'.split(' ');
 const P={
 zh:`习惯追踪|今天|我的习惯|主页|统计|目标|我的|新习惯…|新目标…|添加你的第一个习惯|还没有目标|剩余|连续|天|最长连续|近7天|背景|语言|数据|保存备份|载入备份|删除？|替换当前数据？|文件无效|推荐习惯|习惯灵感|全部|证据|从小事开始|好的开始！|快完成了！|做得好！|完美！|喝水|锻炼|读书|冥想|健康饮食|新子项…|已完成|未完成|本周总结|选择图标`,
 es:`Hábitos|Hoy|Mis hábitos|Inicio|Estadísticas|Metas|Perfil|Nuevo hábito…|Nueva meta…|Añade tu primer hábito|Aún no hay metas|Pendientes|racha|d|Mejor racha|Últimos 7 días|Fondo|Idioma|Datos|Guardar copia|Cargar copia|¿Eliminar?|¿Reemplazar los datos actuales?|Archivo no válido|Sugerir un hábito|Ideas de hábitos|Todos|Evidencia|Pasos pequeños|¡Buen comienzo!|¡Casi listo!|¡Buen trabajo!|¡Perfecto!|Beber agua|Entrenar|Leer un libro|Meditar|Comer sano|Nuevo subelemento…|Hecho|No hecho|Resumen de la semana|Elige un icono`,
@@ -144,9 +145,13 @@ uk:`Трекер звичок|Сьогодні|Мої звички|Головн�
 ko:`습관 트래커|오늘|내 습관|홈|통계|목표|프로필|새 습관…|새 목표…|첫 습관을 추가하세요|아직 목표가 없어요|남음|연속|일|최장 연속|최근 7일|배경|언어|데이터|백업 저장|백업 불러오기|삭제할까요?|현재 데이터를 바꿀까요?|잘못된 파일|습관 추천|습관 아이디어|전체|근거|작은 한 걸음|좋은 시작!|거의 다 왔어요!|잘했어요!|완벽해요!|물 마시기|운동|책 읽기|명상|건강한 식사|새 하위 항목…|완료|미완료|주간 요약|아이콘 선택`,
 it:`Tracker abitudini|Oggi|Le mie abitudini|Home|Statistiche|Obiettivi|Profilo|Nuova abitudine…|Nuovo obiettivo…|Aggiungi la tua prima abitudine|Ancora nessun obiettivo|Restano|serie|g|Serie migliore|Ultimi 7 giorni|Sfondo|Lingua|Dati|Salva copia|Carica copia|Eliminare?|Sostituire i dati attuali?|File non valido|Suggerisci un'abitudine|Idee di abitudini|Tutto|Evidenze|Piccoli passi|Buon inizio!|Quasi fatto!|Ottimo lavoro!|Perfetto!|Bere acqua|Allenamento|Leggere un libro|Meditare|Mangiare sano|Nuovo sotto-elemento…|Fatto|Non fatto|Riepilogo settimana|Scegli un'icona`
 };
+const X={zh:'更换图标|重命名|删除|还没有子项',es:'Cambiar icono|Renombrar|Eliminar|Aún no hay subelementos',hi:'आइकन बदलें|नाम बदलें|हटाएं|अभी कोई उप-आइटम नहीं',ar:'تغيير الأيقونة|إعادة تسمية|حذف|لا توجد عناصر فرعية بعد',fr:`Changer l'icône|Renommer|Supprimer|Aucun élément pour l'instant`,pt:'Mudar ícone|Renomear|Excluir|Ainda sem subitens',de:'Symbol ändern|Umbenennen|Löschen|Noch keine Unterpunkte',ja:'アイコン変更|名前を変更|削除|項目はまだありません',tr:'Simgeyi değiştir|Yeniden adlandır|Sil|Henüz alt öğe yok',uk:'Змінити іконку|Перейменувати|Видалити|Підпунктів поки немає',ko:'아이콘 변경|이름 변경|삭제|하위 항목이 아직 없어요',it:'Cambia icona|Rinomina|Elimina|Nessun sotto-elemento'};
+Object.keys(X).forEach(k=>P[k]+='|'+X[k]);
 function mk(s){const p=s.split('|'),o={};KEYS.forEach((k,i)=>o[k]=p[i]);o.m=[o.n0,o.n1,o.n2,o.n3,o.n4];o.m2=['','','','',''];o.def={water:o.dw,workout:o.dk,book:o.db,meditate:o.dm,food:o.df};return o}
 Object.keys(P).forEach(k=>L[k]=mk(P[k]));
 L.ru.subAdd='Новая подцель…';L.ru.done='Сделано';L.ru.missed='Не сделано';L.ru.weekSum='Итог недели';L.ru.pickIcon='Выбери иконку';
+L.ru.chIcon='Сменить иконку';L.ru.rename='Переименовать';L.ru.remove='Удалить';L.ru.noSub='Пока нет подпунктов';
+L.en.chIcon='Change icon';L.en.rename='Rename';L.en.remove='Delete';L.en.noSub='No sub-items yet';
 L.en.subAdd='New sub-item…';L.en.done='Done';L.en.missed='Not done';L.en.weekSum='Week summary';L.en.pickIcon='Pick an icon';
 const ICONS=[[['Здоровье','Health'],Array.from({length:8},(_,j)=>'sp:'+(0*8+j))],[['Физическое развитие','Fitness'],Array.from({length:8},(_,j)=>'sp:'+(1*8+j))],[['Духовное развитие','Spirit'],Array.from({length:8},(_,j)=>'sp:'+(2*8+j))],[['Работа и бизнес','Work'],Array.from({length:7},(_,j)=>'sp:'+(3*8+j))],[['Обучение и знания','Learning'],Array.from({length:8},(_,j)=>'sp:'+(4*8+j))],[['Продуктивность','Productivity'],Array.from({length:7},(_,j)=>'sp:'+(5*8+j))],[['Отдых и развлечения','Leisure'],Array.from({length:8},(_,j)=>'sp:'+(6*8+j))],[['Дом и быт','Home'],Array.from({length:8},(_,j)=>'sp:'+(7*8+j))],[['Питание','Food'],Array.from({length:8},(_,j)=>'sp:'+(8*8+j))],[['Финансы','Finance'],Array.from({length:8},(_,j)=>'sp:'+(9*8+j))],[['Путешествия','Travel'],Array.from({length:8},(_,j)=>'sp:'+(10*8+j))],[['Творчество и хобби','Creativity'],Array.from({length:8},(_,j)=>'sp:'+(11*8+j))],[['Эмоции и настроение','Mood'],Array.from({length:8},(_,j)=>'sp:'+(12*8+j))],[['Напоминания и важное','Reminders'],Array.from({length:8},(_,j)=>'sp:'+(13*8+j))]];
 const T=()=>Object.assign({},L.en,L[D.lang]||{});
@@ -172,20 +177,30 @@ const ic=(v,z=28)=>{v=String(v);if(v.startsWith('sp:')){const n=+v.slice(3),x=n%
 const icoBtn=(v,target,on)=>on?`<button class="icb" data-pk="${target}">${ic(v)}</button>`:`<span class="ico">${ic(v)}</span>`;
 const fd=(d,o)=>d.toLocaleDateString(D.lang,o);
 function pickerHTML(){const t=T(),r=D.lang=='ru'?0:1;return `<div class="ov"><div class="pk"><div class="sect"><b>${t.pickIcon}</b><button class="x" data-pc="1" style="color:#fff">✕</button></div>${ICONS.map(([n,l])=>`<h3>${n[r]}</h3><div class="ig">${l.map(e=>`<button data-pi="${e}">${ic(e,38)}</button>`).join('')}</div>`).join('')}</div></div>`}
+function menuHTML(){const t=T(),[ty,i]=mn.split(':'),o=ty=='h'?D.habits[i]:gl()[i];return `<div class="ov"><div class="pk"><div class="sect"><b>${esc(ty=='h'?hn(o):o.name)}</b><button class="x" data-mcx="1" style="color:#fff">✕</button></div><button class="btn g" style="width:100%;margin-bottom:8px" data-mc="icon">${t.chIcon}</button><button class="btn g" style="width:100%;margin-bottom:8px" data-mc="rename">${t.rename}</button><button class="btn" style="width:100%;background:#ef4444;color:#fff" data-mc="del">${t.remove}</button></div></div>`}
 function render(){
   const t=T();document.documentElement.lang=D.lang;document.documentElement.dir=D.lang=='ar'?'rtl':'ltr';document.title=t.app;applyTheme();
   const tk=key(new Date());if(!sel)sel=tk;
   let h='';
-  if(tab=='home'){
+  if(tab=='home'&&hd!==null&&D.habits[hd]){
+    const x=D.habits[hd],sb=x.sub||(x.sub=[]),dn=sb.filter(y=>y.log[sel]).length;
+    h+=`<div class="top"><button class="ib" data-hb="1">←</button><h1>${esc(hn(x))}</h1><button class="ib" data-mn="h:${hd}">⋯</button></div>
+    <div class="hero" style="margin:4px 4px 12px">${ic(hi(x),56)}<div><h2>${sb.length?dn+'/'+sb.length:''}</h2><p>${t.streak}: ${streak(x)} ${t.days}</p></div></div><div class="week">`;
+    wkDays(0).forEach(d=>{const k=key(d);h+=`<button data-d="${k}" class="${k==sel?'sel':''}" ${k>tk?'disabled':''}>${fd(d,{weekday:'short'})}<b>${d.getDate()}</b></button>`});
+    h+=`</div><div class="list glass">`;
+    if(!sb.length)h+=`<div class="empty">${t.noSub}</div>`;
+    sb.forEach((y,j)=>{h+=`<div class="row ${y.log[sel]?'done':''}"><button class="chk ${y.log[sel]?'on':''}" data-sc="${j}">${y.log[sel]?'✓':''}</button><div class="n">${esc(y.name)}</div><button class="x" data-sx="${j}">✕</button></div>`});
+    h+=`<form class="add" data-f="s"><input placeholder="${t.subAdd}" autocomplete="off"><button>+</button></form></div>`;
+  }else if(tab=='home'){
     const n=D.habits.length,dn=D.habits.filter(x=>x.log[sel]).length,p=n?Math.round(dn/n*100):0;
     const mi=Math.min(4,Math.floor(p/25)),R=56,C=2*Math.PI*R;
-    h+=`<div class="top"><button class="ib" data-a="edit">${edit?'✓':'☰'}</button><h1>${t.app}</h1><button class="ib" data-tab="prof">⚙</button></div>
+    h+=`<div class="top"><span style="width:40px"></span><h1>${t.app}</h1><button class="ib" data-tab="prof">⚙</button></div>
     <div class="hero"><div class="ring"><svg width="132" height="132"><circle cx="66" cy="66" r="${R}" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="10"/><circle cx="66" cy="66" r="${R}" fill="none" stroke="var(--ac)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C*p/100} ${C}"/></svg><div class="tx"><b>${p}%</b><span>${t.today}</span></div></div>
     <div><h2>${t.m[mi]}</h2><p>${t.m2[mi]}</p></div></div><div class="week">`;
     wkDays(0).forEach(d=>{const k=key(d);h+=`<button data-d="${k}" class="${k==sel?'sel':''}" ${k>tk?'disabled':''}>${fd(d,{weekday:'short'})}<b>${d.getDate()}</b></button>`});
     h+=`</div><div class="sect"><span>${t.habits}</span><span>${dn}/${n}</span></div><div class="list glass">`;
     if(!n)h+=`<div class="empty">${t.noH}</div>`;
-    D.habits.forEach((x,i)=>{h+=`<div class="row">${icoBtn(hi(x),'h:'+i,edit)}<div class="n">${esc(hn(x))}<small>${t.streak}: ${streak(x)} ${t.days}</small></div>${edit?`<button class="x" data-dh="${i}">✕</button>`:''}<button class="chk ${x.log[sel]?'on':''}" data-h="${i}">${x.log[sel]?'✓':''}</button></div>`});
+    D.habits.forEach((x,i)=>{const sb=x.sub||[],sc=sb.filter(y=>y.log[sel]).length;h+=`<div class="row"><span class="ico">${ic(hi(x))}</span><div class="n" data-hd="${i}" style="cursor:pointer">${esc(hn(x))}<small>${t.streak}: ${streak(x)} ${t.days}${sb.length?` · ${sc}/${sb.length}`:''}</small></div><button class="mb" data-mn="h:${i}">⋯</button><button class="chk ${x.log[sel]?'on':''}" data-h="${i}">${x.log[sel]?'✓':''}</button></div>`});
     h+=`<form class="add" data-f="h"><button type="button" class="icb" data-pk="nh">${ic(ni)}</button><input placeholder="${t.addH}" autocomplete="off"><button>+</button></form></div>
     <button class="btn" style="width:100%;margin-top:12px" data-tab="sug">💡 ${t.sugBtn}</button>`;
   }else if(tab=='sug'){
@@ -220,11 +235,11 @@ function render(){
     h+='</div>';
   }else if(tab=='goals'){
     const L2=gl(),open=L2.filter(x=>!x.d).length;
-    h+=`<div class="top">${gp.length?`<button class="ib" data-gb="1">←</button>`:`<span style="width:40px"></span>`}<h1>${gp.length?esc(gTitle()):t.goals}</h1><button class="ib" data-a="edit">${edit?'✓':'☰'}</button></div>
+    h+=`<div class="top">${gp.length?`<button class="ib" data-gb="1">←</button>`:`<span style="width:40px"></span>`}<h1>${gp.length?esc(gTitle()):t.goals}</h1><span style="width:40px"></span></div>
     <div class="sect"><span>${t.left}</span><span>${open}</span></div><div class="list glass">`;
     if(!L2.length)h+=`<div class="empty">${t.noG}</div>`;
     L2.forEach((x,i)=>{const c=x.c||[],cd=c.filter(y=>y.d).length;
-      h+=`<div class="row ${x.d?'done':''}"><button class="chk ${x.d?'on':''}" data-g="${i}">${x.d?'✓':''}</button>${icoBtn(x.i||'🎯','g:'+i,edit)}<div class="n" data-go="${i}" style="cursor:pointer">${esc(x.name)}${c.length?`<small>${cd}/${c.length}</small>`:''}</div>${edit?`<button class="x" data-dg="${i}">✕</button>`:`<span class="chev" data-go="${i}">›</span>`}</div>`});
+      h+=`<div class="row ${x.d?'done':''}"><button class="chk ${x.d?'on':''}" data-g="${i}">${x.d?'✓':''}</button><span class="ico">${ic(x.i||'sp:28')}</span><div class="n" data-go="${i}" style="cursor:pointer">${esc(x.name)}${c.length?`<small>${cd}/${c.length}</small>`:''}</div><button class="mb" data-mn="g:${i}">⋯</button></div>`});
     h+=`<form class="add" data-f="g"><button type="button" class="icb" data-pk="ng">${ic(ng)}</button><input placeholder="${gp.length?t.subAdd:t.addG}" autocomplete="off"><button>+</button></form></div>`;
   }else{
     h+=`<div class="top"><span style="width:40px"></span><h1>${t.prof}</h1><span style="width:40px"></span></div>
@@ -234,19 +249,30 @@ function render(){
     <h3>${t.backup}</h3><div class="seg glass"><button class="btn g" data-a="save">${t.save}</button><button class="btn g" data-a="load">${t.load}</button></div><input type="file" id="file" accept=".json" hidden>`;
   }
   if(pk)h+=pickerHTML();
+  if(mn)h+=menuHTML();
   m.innerHTML=h;
-  nav.innerHTML=[['home','🏠',t.home],['stats','📊',t.stats],['goals','🏆',t.goals],['prof','👤',t.prof]].map(([k,i,l])=>`<button data-tab="${k}" class="${tab==k?'a':''}"><i>${i}</i>${l}</button>`).join('');
+  nav.innerHTML=[['home','sp:56',t.home],['stats','sp:25',t.stats],['goals','sp:98',t.goals],['prof','sp:96',t.prof]].map(([k,i,l])=>`<button data-tab="${k}" class="${tab==k?'a':''}"><i>${ic(i,26)}</i>${l}</button>`).join('');
 }
 const m=document.getElementById('m'),nav=document.getElementById('nav');
 const app=document.getElementById('app');
 function pick(e){const p=pk;pk=null;if(p=='nh')ni=e;else if(p=='ng')ng=e;else{const[t,i]=p.split(':');if(t=='h')D.habits[i].i=e;else gl()[i].i=e}}
 app.addEventListener('click',e=>{
-  if(e.target.classList&&e.target.classList.contains('ov')){pk=null;render();return}
-  const b=e.target.closest('button,[data-go]');if(!b)return;const d=b.dataset;
+  if(e.target.classList&&e.target.classList.contains('ov')){pk=null;mn=null;render();return}
+  const b=e.target.closest('button,[data-go],[data-hd]');if(!b)return;const d=b.dataset;
   if(d.pi)pick(d.pi);
   else if(d.pc)pk=null;
   else if(d.pk)pk=d.pk;
-  else if(d.tab){tab=d.tab}
+  else if(d.mn)mn=d.mn;
+  else if(d.mcx)mn=null;
+  else if(d.mc){const[ty,i]=mn.split(':'),arr=ty=='h'?D.habits:gl(),o=arr[i];
+    if(d.mc=='icon'){pk=mn;mn=null}
+    else if(d.mc=='rename'){const v=prompt(T().rename,ty=='h'?hn(o):o.name);mn=null;if(v&&v.trim()){if(ty=='h'){o.i=hi(o);delete o.k;delete o.s}o.name=v.trim()}}
+    else if(d.mc=='del'){if(confirm(T().del)){arr.splice(i,1);if(ty=='h')hd=null}mn=null}}
+  else if(d.hd!==undefined)hd=+d.hd;
+  else if(d.hb)hd=null;
+  else if(d.sc!==undefined){const l=D.habits[hd].sub[d.sc].log;l[sel]?delete l[sel]:l[sel]=1}
+  else if(d.sx!==undefined)D.habits[hd].sub.splice(d.sx,1);
+  else if(d.tab){tab=d.tab;if(tab=='home')hd=null}
   else if(d.d)sel=d.d;
   else if(d.sd)sd=d.sd;
   else if(d.wk){wk=Math.min(0,wk+ +d.wk);sd=null}
@@ -268,7 +294,8 @@ app.addEventListener('click',e=>{
 });
 app.addEventListener('submit',e=>{
   e.preventDefault();const f=e.target,v=f.querySelector('input').value.trim();if(!v)return;
-  if(f.dataset.f=='h'){D.habits.push({name:v,i:ni,log:{},c:key(new Date())});ni='sp:46'}
+  if(f.dataset.f=='s')D.habits[hd].sub.push({name:v,log:{}});
+  else if(f.dataset.f=='h'){D.habits.push({name:v,i:ni,log:{},c:key(new Date())});ni='sp:46'}
   else{gl().push({name:v,d:false,i:ng,c:[]});ng='sp:28'}
   save();render();
 });
