@@ -157,6 +157,7 @@ L.ru.chIcon='Сменить иконку';L.ru.rename='Переименоват�
 L.en.chIcon='Change icon';L.en.rename='Rename';L.en.remove='Delete';L.en.noSub='No sub-items yet';
 L.ru.habits='Привычки';L.ru.tasks='Мои задачи на день';L.ru.addT='Новая задача…';L.ru.noT='Добавь задачу на этот день';
 L.en.habits='Habits';L.en.tasks='My tasks for the day';L.en.addT='New task…';L.en.noT='Add a task for this day';
+L.ru.addCal='Добавить в календарь (каждый день)';L.en.addCal='Add to calendar (every day)';
 L.ru.remind='Напоминание';L.ru.reward='Награда';L.ru.rewardIs='Твоя награда';L.ru.dlApp='Скачать приложение для Android';
 L.ru.rewardAsk='Что ты получишь, когда выполнишь цель? (пусто — убрать)';L.ru.remindSet='Во сколько напоминать каждый день?';L.ru.remindOff='Выключить';L.ru.remindSave='Сохранить';L.ru.notifH='Пора отметить привычку';L.ru.notifG='Пора заняться целью';
 L.ru.remHint='Напоминания приходят каждый день в выбранное время. В установленном приложении они надёжные, в браузере приходят только пока страница открыта.';L.ru.wdHint='Виджет: удерживай палец на главном экране, затем «Виджеты» и «Habit Tracker».';L.ru.remTitle='Приложение, напоминания, виджет';
@@ -200,6 +201,7 @@ async function syncRem(){
     if(pend.notifications&&pend.notifications.length)await ln.cancel({notifications:pend.notifications.map(n=>({id:n.id}))});
     if(!list.length)return;
     let p=await ln.checkPermissions();if(p.display!=='granted')p=await ln.requestPermissions();if(p.display!=='granted')return;
+    try{const ex=await ln.checkExactNotificationSetting();if(ex.exact_alarm!=='granted'&&!D.exAsk){D.exAsk=1;save();await ln.changeExactNotificationSetting()}}catch(e){}
     await ln.schedule({notifications:list.map(({o,k})=>{const[hh,mm]=o.rm.split(':').map(Number);return{id:nidOf(o),title:k=='h'?hn(o):o.name,body:k=='h'?t.notifH:t.notifG,schedule:{on:{hour:hh,minute:mm},repeats:true,allowWhileIdle:true}}})});
     save();
   }catch(e){}}
@@ -209,7 +211,7 @@ setInterval(()=>{if(NATIVE||!('Notification' in window)||Notification.permission
   remItems().forEach(({o,k})=>{if(o.rm===hm&&o.fired!==tk){o.fired=tk;save();const ti=k=='h'?hn(o):o.name,bo=k=='h'?t.notifH:t.notifG;
     if(navigator.serviceWorker&&navigator.serviceWorker.ready)navigator.serviceWorker.ready.then(r=>r.showNotification(ti,{body:bo,icon:'icon-192.png'})).catch(()=>{try{new Notification(ti,{body:bo})}catch(e){}});else try{new Notification(ti,{body:bo})}catch(e){}}})},20000);
 function toast(s){tm=s;setTimeout(()=>{tm='';render()},5000)}
-function remindHTML(){const t=T(),[ty,i]=rv.split(':'),o=ty=='h'?D.habits[i]:gl()[i];return `<div class="ov"><div class="pk"><div class="sect"><b>⏰ ${esc(ty=='h'?hn(o):o.name)}</b><button class="x" data-mcx="1" style="color:#fff">✕</button></div><div style="font-size:13px;opacity:.8;margin-bottom:8px">${t.remindSet}</div><input type="time" id="rt" value="${o.rm||'09:00'}" style="width:100%;padding:12px;font-size:20px;border-radius:10px;border:1px solid #444;background:#111;color:#fff;margin-bottom:10px"><button class="btn" style="width:100%;margin-bottom:8px" data-rs="1">${t.remindSave}</button>${o.rm?`<button class="btn g" style="width:100%" data-rd="1">${t.remindOff}</button>`:''}</div></div>`}
+function remindHTML(){const t=T(),[ty,i]=rv.split(':'),o=ty=='h'?D.habits[i]:gl()[i];return `<div class="ov"><div class="pk"><div class="sect"><b>⏰ ${esc(ty=='h'?hn(o):o.name)}</b><button class="x" data-mcx="1" style="color:#fff">✕</button></div><div style="font-size:13px;opacity:.8;margin-bottom:8px">${t.remindSet}</div><input type="time" id="rt" value="${o.rm||'09:00'}" style="width:100%;padding:12px;font-size:20px;border-radius:10px;border:1px solid #444;background:#111;color:#fff;margin-bottom:10px"><button class="btn" style="width:100%;margin-bottom:8px" data-rs="1">${t.remindSave}</button>${NATIVE?`<button class="btn g" style="width:100%;margin-bottom:8px" data-rc="1">📅 ${t.addCal}</button>`:''}${o.rm?`<button class="btn g" style="width:100%" data-rd="1">${t.remindOff}</button>`:''}</div></div>`}
 function menuHTML(){const t=T(),[ty,i]=mn.split(':'),o=ty=='h'?D.habits[i]:gl()[i];return `<div class="ov"><div class="pk"><div class="sect"><b>${esc(ty=='h'?hn(o):o.name)}</b><button class="x" data-mcx="1" style="color:#fff">✕</button></div><button class="btn g" style="width:100%;margin-bottom:8px" data-mc="icon">${t.chIcon}</button><button class="btn g" style="width:100%;margin-bottom:8px" data-mc="rename">${t.rename}</button>${ty=='g'?`<button class="btn g" style="width:100%;margin-bottom:8px" data-mc="reward">🎁 ${t.reward}${o.r?': '+esc(o.r):''}</button>`:''}<button class="btn g" style="width:100%;margin-bottom:8px" data-mc="remind">⏰ ${t.remind}${o.rm?': '+o.rm:''}</button><button class="btn" style="width:100%;background:#ef4444;color:#fff" data-mc="del">${t.remove}</button></div></div>`}
 function render(){
   const t=T();document.documentElement.lang=D.lang;document.documentElement.dir=D.lang=='ar'?'rtl':'ltr';document.title=t.app;applyTheme();
@@ -306,6 +308,7 @@ app.addEventListener('click',e=>{
   else if(d.mn)mn=d.mn;
   else if(d.mcx){mn=null;rv=null}
   else if(d.rs){const[ty,i]=rv.split(':'),o=(ty=='h'?D.habits:gl())[i],v=document.getElementById('rt').value;o.rm=v||null;if(o.rm)nidOf(o);rv=null;save();render();syncRem();return}
+  else if(d.rc){const[ty,i]=rv.split(':'),o=(ty=='h'?D.habits:gl())[i],v=(document.getElementById('rt').value||o.rm||'09:00').split(':').map(Number),w=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.WidgetBridge;if(w)w.addEvent({title:ty=='h'?hn(o):o.name,hour:v[0],minute:v[1]}).catch(()=>{});return}
   else if(d.rd){const[ty,i]=rv.split(':'),o=(ty=='h'?D.habits:gl())[i];o.rm=null;rv=null;save();render();syncRem();return}
   else if(d.mc){const[ty,i]=mn.split(':'),arr=ty=='h'?D.habits:gl(),o=arr[i];
     if(d.mc=='icon'){pk=mn;mn=null}
@@ -354,7 +357,7 @@ app.addEventListener('change',e=>{
 });
 D.habits.forEach(h=>{if(!h.c)h.c=key(new Date())});
 if(!D.tasks)D.tasks=[];
-setTimeout(()=>{pushWidget();syncRem()},1500);
+setTimeout(()=>{pushWidget();syncRem();const ln=LN();if(ln&&!D.asked){D.asked=1;save();ln.requestPermissions().catch(()=>{})}},1500);
 render();
 if(!NATIVE&&'serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script></body></html>
