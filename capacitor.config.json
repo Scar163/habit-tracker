@@ -1,0 +1,7 @@
+{
+  "appId": "com.gor.habittracker",
+  "appName": "Habit Tracker",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "plugins": { "LocalNotifications": { "smallIcon": "ic_stat" } }
+}
