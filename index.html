@@ -168,7 +168,7 @@ function wkDays(off){const d=new Date(),w=(d.getDay()+6)%7;return[...Array(7)].m
 const cnt=(h,k,tk)=>k<=tk&&(!h.c||k>=h.c||h.log[k]);
 const gl=()=>gp.reduce((l,i)=>l[i].c||(l[i].c=[]),D.goals);
 const gTitle=()=>{let l=D.goals,n='';gp.forEach(i=>{n=l[i].name;l=l[i].c||[]});return n};
-const ic=(v,z=28)=>{v=String(v);if(v.startsWith('sp:')){const n=+v.slice(3),x=n%8,y=Math.floor(n/8);return `<span class="spi" style="width:${z}px;height:${z}px;background:url(icons.webp) -${x*z}px -${y*z}px/${8*z}px ${14*z}px"></span>`}return v};
+const ic=(v,z=28)=>{v=String(v);if(v.startsWith('sp:')){const n=+v.slice(3),x=n%8,y=Math.floor(n/8);return `<span class="spi" style="width:${z}px;height:${z}px;background:url(icons.webp?v=2) -${x*z}px -${y*z}px/${8*z}px ${14*z}px"></span>`}return v};
 const icoBtn=(v,target,on)=>on?`<button class="icb" data-pk="${target}">${ic(v)}</button>`:`<span class="ico">${ic(v)}</span>`;
 const fd=(d,o)=>d.toLocaleDateString(D.lang,o);
 function pickerHTML(){const t=T(),r=D.lang=='ru'?0:1;return `<div class="ov"><div class="pk"><div class="sect"><b>${t.pickIcon}</b><button class="x" data-pc="1" style="color:#fff">✕</button></div>${ICONS.map(([n,l])=>`<h3>${n[r]}</h3><div class="ig">${l.map(e=>`<button data-pi="${e}">${ic(e,38)}</button>`).join('')}</div>`).join('')}</div></div>`}
