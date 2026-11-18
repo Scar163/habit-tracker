@@ -128,7 +128,7 @@ const sg=id=>SUG.find(x=>x.id==id);
 const K='habit-tracker-v2';
 let D;try{D=JSON.parse(localStorage.getItem(K))}catch(e){}
 if(!D){D={theme:0,lang:(navigator.language||'en').slice(0,2),habits:[],goals:[]}}
-let tab='home',sel=null,edit=false,hd=null,mn=null,rv=null,tm='',sugF='all',wk=0,sd=null,gp=[],pk=null,ni='sp:46',ng='sp:28';
+let hw=0,tab='home',sel=null,edit=false,hd=null,mn=null,rv=null,tm='',sugF='all',wk=0,sd=null,gp=[],pk=null,ni='sp:46',ng='sp:28';
 const LANGS=[['ru','Русский'],['en','English'],['zh','中文'],['es','Español'],['hi','हिन्दी'],['ar','العربية'],['fr','Français'],['pt','Português'],['de','Deutsch'],['ja','日本語'],['tr','Türkçe'],['uk','Українська'],['ko','한국어'],['it','Italiano']];
 if(!LANGS.some(l=>l[0]==D.lang))D.lang='en';
 const KEYS='app today habits home stats goals prof addH addG noH noG left streak days best week theme lang backup save load del replace bad sugBtn sugTitle all rel n0 n1 n2 n3 n4 dw dk db dm df subAdd done missed weekSum pickIcon chIcon rename remove noSub remind reward rewardIs dlApp'.split(' ');
@@ -158,6 +158,7 @@ L.en.chIcon='Change icon';L.en.rename='Rename';L.en.remove='Delete';L.en.noSub='
 L.ru.habits='Привычки';L.ru.tasks='Мои задачи на день';L.ru.addT='Новая задача…';L.ru.noT='Добавь задачу на этот день';
 L.en.habits='Habits';L.en.tasks='My tasks for the day';L.en.addT='New task…';L.en.noT='Add a task for this day';
 L.ru.addCal='Добавить в календарь (каждый день)';L.en.addCal='Add to calendar (every day)';
+L.ru.ownBg='Свой фон из фото';L.en.ownBg='Use my own photo as background';L.ru.bgReset='Сбросить';L.en.bgReset='Reset';
 L.ru.remind='Напоминание';L.ru.reward='Награда';L.ru.rewardIs='Твоя награда';L.ru.dlApp='Скачать приложение для Android';
 L.ru.rewardAsk='Что ты получишь, когда выполнишь цель? (пусто — убрать)';L.ru.remindSet='Во сколько напоминать каждый день?';L.ru.remindOff='Выключить';L.ru.remindSave='Сохранить';L.ru.notifH='Пора отметить привычку';L.ru.notifG='Пора заняться целью';
 L.ru.remHint='Напоминания приходят каждый день в выбранное время. В установленном приложении они надёжные, в браузере приходят только пока страница открыта.';L.ru.wdHint='Виджет: удерживай палец на главном экране, затем «Виджеты» и «Habit Tracker».';L.ru.remTitle='Приложение, напоминания, виджет';
@@ -178,7 +179,8 @@ function best(h){let b=0,c=0;Object.keys(h.log).sort().forEach((k,i,a)=>{const p
 function applyTheme(){
   const t=TH[D.theme];
   document.documentElement.style.setProperty('--ac',t.ac);
-  document.getElementById('bg').style.background=`url("${D.theme+1}.jpg") center/cover no-repeat, ${t.g}`;
+  let cb=null;try{cb=localStorage.getItem('habit-bg')}catch(e){}
+  document.getElementById('bg').style.background=(D.cbg&&cb)?`linear-gradient(rgba(0,0,0,.25),rgba(0,0,0,.35)), url("${cb}") center/cover no-repeat, ${t.g}`:`url("${D.theme+1}.jpg") center/cover no-repeat, ${t.g}`;
 }
 function weekDays(){const d=new Date(),w=(d.getDay()+6)%7;return[...Array(7)].map((_,i)=>{const x=new Date();x.setDate(d.getDate()-w+i);return x})}
 function wkDays(off){const d=new Date(),w=(d.getDay()+6)%7;return[...Array(7)].map((_,i)=>{const x=new Date();x.setDate(d.getDate()-w+i+off*7);return x})}
@@ -232,8 +234,9 @@ function render(){
     const mi=Math.min(4,Math.floor(p/25)),R=56,C=2*Math.PI*R;
     h+=`<div class="top"><span style="width:40px"></span><h1>${t.app}</h1><button class="ib" data-tab="prof">⚙</button></div>
     <div class="hero"><div class="ring"><svg width="132" height="132"><circle cx="66" cy="66" r="${R}" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="10"/><circle cx="66" cy="66" r="${R}" fill="none" stroke="var(--ac)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C*p/100} ${C}"/></svg><div class="tx"><b>${p}%</b><span>${t.today}</span></div></div>
-    <div><h2>${t.m[mi]}</h2><p>${t.m2[mi]}</p></div></div><div class="week">`;
-    wkDays(0).forEach(d=>{const k=key(d);h+=`<button data-d="${k}" class="${k==sel?'sel':''}" ${k>tk?'disabled':''}>${fd(d,{weekday:'short'})}<b>${d.getDate()}</b></button>`});
+    <div><h2>${t.m[mi]}</h2><p>${t.m2[mi]}</p></div></div>`;
+    const ds=wkDays(hw);h+=`<div class="wk"><button class="ib" data-hw="-1">‹</button><b>${fd(ds[0],{day:'numeric',month:'short'})} – ${fd(ds[6],{day:'numeric',month:'short'})}</b><button class="ib" data-hw="1">›</button></div><div class="week">`;
+    ds.forEach(d=>{const k=key(d);h+=`<button data-d="${k}" class="${k==sel?'sel':''}">${fd(d,{weekday:'short'})}<b>${d.getDate()}</b></button>`});
     h+=`</div><div class="sect"><span>${t.tasks}</span><span>${tdn}/${tl.length}</span></div><div class="list glass">`;
     if(!tl.length)h+=`<div class="empty">${t.noT}</div>`;
     D.tasks.forEach((x,i)=>{if(x.d!=sel)return;h+=`<div class="row ${x.done?'done':''}"><div class="n">${esc(x.name)}</div><button class="x" data-tx="${i}">✕</button><button class="chk ${x.done?'on':''}" data-tk="${i}">${x.done?'✓':''}</button></div>`});
@@ -284,8 +287,9 @@ function render(){
   }else{
     h+=`<div class="top"><span style="width:40px"></span><h1>${t.prof}</h1><span style="width:40px"></span></div>
     <h3>${t.theme}</h3><div class="themes glass">`;
-    TH.forEach((x,i)=>{h+=`<button class="th ${i==D.theme?'on':''}" data-th="${i}" style="background:url('${i+1}.jpg') center/cover,${x.g}">${x.n[D.lang=='ru'?0:1]}</button>`});
-    h+=`</div><h3>${t.lang}</h3><div class="lg glass">`+LANGS.map(([c,n])=>`<button class="btn ${D.lang==c?'':'g'}" data-l="${c}">${n}</button>`).join('')+`</div>
+    TH.forEach((x,i)=>{h+=`<button class="th ${i==D.theme&&!D.cbg?'on':''}" data-th="${i}" style="background:url('${i+1}.jpg') center/cover,${x.g}">${x.n[D.lang=='ru'?0:1]}</button>`});
+    h+=`</div><div class="glass" style="padding:12px 14px;margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><label class="btn" style="flex:1;text-align:center;cursor:pointer">🖼 ${t.ownBg}<input type="file" id="bgfile" accept="image/*" hidden></label>${D.cbg?`<button class="btn g" data-bgx="1">${t.bgReset}</button>`:''}</div>
+    <h3>${t.lang}</h3><div class="lg glass">`+LANGS.map(([c,n])=>`<button class="btn ${D.lang==c?'':'g'}" data-l="${c}">${n}</button>`).join('')+`</div>
     <h3>${t.remTitle}</h3><div class="glass" style="padding:12px 14px;font-size:13px;line-height:1.5">${NATIVE?'':`<a class="btn" style="display:block;text-align:center;text-decoration:none;margin-bottom:10px" href="https://github.com/Scar163/habit-tracker/releases/latest/download/habit-tracker.apk">⬇ ${t.dlApp}</a>`}<div style="opacity:.85">⏰ ${t.remHint}</div><div style="opacity:.85;margin-top:6px">🧩 ${t.wdHint}</div></div>
     <h3>${t.backup}</h3><div class="seg glass"><button class="btn g" data-a="save">${t.save}</button><button class="btn g" data-a="load">${t.load}</button></div><input type="file" id="file" accept=".json" hidden>`;
   }
@@ -318,6 +322,7 @@ app.addEventListener('click',e=>{
     else if(d.mc=='del'){if(confirm(T().del)){arr.splice(i,1);if(ty=='h')hd=null}mn=null}}
   else if(d.tk!==undefined){const x=D.tasks[d.tk];x.done=!x.done}
   else if(d.tx!==undefined)D.tasks.splice(d.tx,1);
+  else if(d.hw)hw+=+d.hw;
   else if(d.hd!==undefined)hd=+d.hd;
   else if(d.hb)hd=null;
   else if(d.sc!==undefined){const l=D.habits[hd].sub[d.sc].log;l[sel]?delete l[sel]:l[sel]=1}
@@ -328,13 +333,14 @@ app.addEventListener('click',e=>{
   else if(d.wk){wk=Math.min(0,wk+ +d.wk);sd=null}
   else if(d.sf)sugF=d.sf;
   else if(d.add){if(!D.habits.some(y=>y.s==d.add||y.k==d.add))D.habits.push({s:d.add,log:{},c:key(new Date())})}
-  else if(d.h!==undefined){const l=D.habits[d.h].log;l[sel]?delete l[sel]:l[sel]=1}
+  else if(d.h!==undefined){if(sel<=key(new Date())){const l=D.habits[d.h].log;l[sel]?delete l[sel]:l[sel]=1}}
   else if(d.go!==undefined)gp.push(+d.go);
   else if(d.gb)gp.pop();
   else if(d.g!==undefined){const x=gl()[d.g];x.d=!x.d;if(x.d&&x.r)toast(T().rewardIs+': '+x.r);if(x.rm)setTimeout(syncRem,0)}
   else if(d.dh!==undefined){if(confirm(T().del))D.habits.splice(d.dh,1)}
   else if(d.dg!==undefined){if(confirm(T().del))gl().splice(d.dg,1)}
-  else if(d.th!==undefined)D.theme=+d.th;
+  else if(d.th!==undefined){D.theme=+d.th;D.cbg=0}
+  else if(d.bgx){D.cbg=0}
   else if(d.l){D.lang=d.l;setTimeout(syncRem,0)}
   else if(d.a=='edit')edit=!edit;
   else if(d.a=='save'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D)],{type:'application/json'}));a.download='tracker-backup.json';a.click();return}
@@ -351,6 +357,10 @@ app.addEventListener('submit',e=>{
   save();render();
 });
 app.addEventListener('change',e=>{
+  if(e.target.id=='bgfile'){const f=e.target.files[0];if(!f)return;const fr=new FileReader();
+    fr.onload=()=>{const im=new Image();im.onload=()=>{const M=1280,sc=Math.min(1,M/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      try{localStorage.setItem('habit-bg',c.toDataURL('image/jpeg',.8));D.cbg=1;save();render()}catch(x){alert(T().bad)}};im.onerror=()=>alert(T().bad);im.src=fr.result};
+    fr.readAsDataURL(f);return}
   if(e.target.id!='file')return;const r=new FileReader();
   r.onload=()=>{try{const j=JSON.parse(r.result);if(j.habits&&j.goals&&confirm(T().replace)){D=j;if(!D.tasks)D.tasks=[];if(!LANGS.some(l=>l[0]==D.lang))D.lang='en';save();render()}}catch(x){alert(T().bad)}};
   r.readAsText(e.target.files[0]);
