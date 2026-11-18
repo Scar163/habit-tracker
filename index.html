@@ -60,7 +60,8 @@ nav button.a{opacity:1;color:var(--ac)}
 h3{margin:16px 4px 6px;font-size:15px;opacity:.85}
 .icb{width:36px;height:36px;border-radius:10px;border:0;background:rgba(255,255,255,.12);font-size:20px;padding:0;flex:none}
 .add .icb{background:rgba(255,255,255,.14);font-size:22px;padding:0;color:#fff}
-.ico{font-size:22px;flex:none}
+.ico{font-size:22px;flex:none;display:inline-flex}
+.spi{display:inline-block;border-radius:22%;flex:none}
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;display:flex;align-items:flex-end;justify-content:center}
 .pk{background:#1b1b2b;width:100%;max-width:520px;max-height:80vh;overflow-y:auto;border-radius:18px 18px 0 0;padding:14px}
 .ig{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
@@ -105,27 +106,27 @@ const L={
   del:'Delete?',replace:'Replace current data?',bad:'Invalid file',hint:'',
   def:{water:'Drink water',workout:'Workout',book:'Read a book',meditate:'Meditate',food:'Eat healthy food'}}
 };
-const ICON={water:'💧',workout:'🏋️',book:'📖',meditate:'🧘',food:'🍎'};
+const ICON={water:'sp:2',workout:'sp:8',book:'sp:32',meditate:'sp:16',food:'sp:3'};
 const GR={body:['Тело','Body'],mind:['Ум','Mind'],psy:['Психика','Mood']};
 const SUG=[
- {id:'steps',i:'🚶',g:'body',s:3,n:['Пройти 7–8 тысяч шагов','Walk 7–8k steps'],w:['Больше шагов связано с меньшим риском ранней смерти. Выигрыш растёт примерно до 6–8 тыс. шагов после 60 лет и до 8–10 тыс. до 60.','More steps is linked to lower risk of early death. The gain levels off around 6–8k steps after 60 and 8–10k below 60.'],u:'https://pubmed.ncbi.nlm.nih.gov/35247352/',a:['Мета-анализ 15 когорт, Lancet Public Health 2022','Meta-analysis of 15 cohorts, Lancet Public Health 2022']},
- {id:'move',i:'🏃',g:'body',s:3,n:['Двигаться 20–40 минут','Exercise 20–40 minutes'],w:['150 минут активности в неделю — самый сильный фактор в большом исследовании: риск смерти ниже примерно на 46%.','150 minutes of activity per week was the strongest factor in a large study: about 46% lower risk of death.'],u:'https://neurosciencenews.com/longevity-lifestyle-changes-23685/',a:['AJCN 2024, 275 тыс. человек','AJCN 2024, 275k people']},
- {id:'sleep',i:'😴',g:'body',s:3,n:['Спать 7–8 часов','Sleep 7–8 hours'],w:['Кто спит меньше 7 часов, хуже проходит тесты на мышление. Во сне закрепляется память.','People sleeping under 7 hours score lower on thinking tests. Memory is consolidated during sleep.'],u:'https://www.health.harvard.edu/mind-and-mood/simple-ways-to-keep-your-mind-sharp',a:['Harvard Health','Harvard Health']},
+ {id:'steps',i:'sp:9',g:'body',s:3,n:['Пройти 7–8 тысяч шагов','Walk 7–8k steps'],w:['Больше шагов связано с меньшим риском ранней смерти. Выигрыш растёт примерно до 6–8 тыс. шагов после 60 лет и до 8–10 тыс. до 60.','More steps is linked to lower risk of early death. The gain levels off around 6–8k steps after 60 and 8–10k below 60.'],u:'https://pubmed.ncbi.nlm.nih.gov/35247352/',a:['Мета-анализ 15 когорт, Lancet Public Health 2022','Meta-analysis of 15 cohorts, Lancet Public Health 2022']},
+ {id:'move',i:'sp:12',g:'body',s:3,n:['Двигаться 20–40 минут','Exercise 20–40 minutes'],w:['150 минут активности в неделю — самый сильный фактор в большом исследовании: риск смерти ниже примерно на 46%.','150 minutes of activity per week was the strongest factor in a large study: about 46% lower risk of death.'],u:'https://neurosciencenews.com/longevity-lifestyle-changes-23685/',a:['AJCN 2024, 275 тыс. человек','AJCN 2024, 275k people']},
+ {id:'sleep',i:'sp:4',g:'body',s:3,n:['Спать 7–8 часов','Sleep 7–8 hours'],w:['Кто спит меньше 7 часов, хуже проходит тесты на мышление. Во сне закрепляется память.','People sleeping under 7 hours score lower on thinking tests. Memory is consolidated during sleep.'],u:'https://www.health.harvard.edu/mind-and-mood/simple-ways-to-keep-your-mind-sharp',a:['Harvard Health','Harvard Health']},
  {id:'nophone',i:'📵',g:'body',s:1,n:['Без телефона в кровати','No phone in bed'],w:['Час экрана в постели связан с шансом бессонницы выше на 59% (связь, не доказанная причина).','An hour of screen time in bed is linked to 59% higher odds of insomnia (association, not proven cause).'],u:'https://www.tomsguide.com/wellness/sleep/cant-sleep-your-phone-could-be-causing-your-insomnia-study-shows',a:['Норвежские исследования 2025','Norwegian studies 2025']},
- {id:'plants',i:'🥗',g:'body',s:2,n:['Растительная еда','Plant-based meal'],w:['Диета с большим количеством растительной еды связана со снижением риска смерти примерно на 21%.','A diet rich in plant foods is linked to about 21% lower risk of death.'],u:'https://neurosciencenews.com/longevity-lifestyle-changes-23685/',a:['AJCN 2024','AJCN 2024']},
- {id:'water',i:'💧',g:'body',s:1,n:['Пить воду в течение дня','Drink water through the day'],w:['Признаки нехватки воды связаны с ранним старением и болезнями. Точную норму наука не назвала, «8 стаканов» не доказаны.','Signs of low body water are linked to early aging and disease. No exact amount is established; "8 glasses" is not proven.'],u:'https://www.nbcnews.com/health/health-news/poor-hydration-linked-early-aging-chronic-disease-study-rcna63741',a:['Исследование NIH, 11 тыс. человек','NIH study, 11k people']},
- {id:'learn',i:'🎓',g:'mind',s:3,n:['Учить новое 30 минут','Learn something new 30 min'],w:['В эксперименте пожилые люди 3 месяца осваивали сложные навыки, и память улучшилась. Лёгкие занятия вроде кроссвордов этого не дали.','In an experiment, older adults learned demanding skills for 3 months and memory improved. Easy activities like puzzles did not.'],u:'https://www.psychologicalscience.org/news/releases/learning-new-skills-keeps-an-aging-mind-sharp.html',a:['Psychological Science 2013','Psychological Science 2013']},
- {id:'book',i:'📖',g:'mind',s:2,n:['Читать книгу','Read a book'],w:['Читающие книги жили дольше за 12 лет наблюдения (связь, не доказанная причина).','Book readers lived longer over 12 years of follow-up (association, not proven cause).'],u:'https://qz.com/754109/new-research-links-reading-books-with-longer-life',a:['Исследование Йеля, 3600 человек','Yale study, 3,600 people']},
+ {id:'plants',i:'sp:64',g:'body',s:2,n:['Растительная еда','Plant-based meal'],w:['Диета с большим количеством растительной еды связана со снижением риска смерти примерно на 21%.','A diet rich in plant foods is linked to about 21% lower risk of death.'],u:'https://neurosciencenews.com/longevity-lifestyle-changes-23685/',a:['AJCN 2024','AJCN 2024']},
+ {id:'water',i:'sp:2',g:'body',s:1,n:['Пить воду в течение дня','Drink water through the day'],w:['Признаки нехватки воды связаны с ранним старением и болезнями. Точную норму наука не назвала, «8 стаканов» не доказаны.','Signs of low body water are linked to early aging and disease. No exact amount is established; "8 glasses" is not proven.'],u:'https://www.nbcnews.com/health/health-news/poor-hydration-linked-early-aging-chronic-disease-study-rcna63741',a:['Исследование NIH, 11 тыс. человек','NIH study, 11k people']},
+ {id:'learn',i:'sp:35',g:'mind',s:3,n:['Учить новое 30 минут','Learn something new 30 min'],w:['В эксперименте пожилые люди 3 месяца осваивали сложные навыки, и память улучшилась. Лёгкие занятия вроде кроссвордов этого не дали.','In an experiment, older adults learned demanding skills for 3 months and memory improved. Easy activities like puzzles did not.'],u:'https://www.psychologicalscience.org/news/releases/learning-new-skills-keeps-an-aging-mind-sharp.html',a:['Psychological Science 2013','Psychological Science 2013']},
+ {id:'book',i:'sp:32',g:'mind',s:2,n:['Читать книгу','Read a book'],w:['Читающие книги жили дольше за 12 лет наблюдения (связь, не доказанная причина).','Book readers lived longer over 12 years of follow-up (association, not proven cause).'],u:'https://qz.com/754109/new-research-links-reading-books-with-longer-life',a:['Исследование Йеля, 3600 человек','Yale study, 3,600 people']},
  {id:'social',i:'👥',g:'mind',s:2,n:['Пообщаться с близкими','Talk with someone close'],w:['Крепкие связи связаны с более медленным спадом памяти и мышления.','Strong social ties are linked to slower decline in memory and thinking.'],u:'https://www.health.harvard.edu/mind-and-mood/simple-ways-to-keep-your-mind-sharp',a:['Harvard Health','Harvard Health']},
- {id:'meditate',i:'🧘',g:'psy',s:2,n:['Медитация 10 минут','Meditate 10 minutes'],w:['Умеренно снижает тревогу, но не лучше других методов, и эффект слабеет через 3–6 месяцев.','Moderately reduces anxiety, but not better than other treatments, and fades after 3–6 months.'],u:'https://pubmed.ncbi.nlm.nih.gov/24395196/',a:['JAMA Internal Medicine 2014, 47 испытаний','JAMA Internal Medicine 2014, 47 trials']},
- {id:'grat',i:'🙏',g:'psy',s:1,n:['Записать 3 благодарности','Write 3 things you are grateful for'],w:['Небольшой рост благополучия. Исследования часто с высоким риском ошибок, эффект скромный.','A small boost in well-being. Studies often have high risk of bias; the effect is modest.'],u:'https://pmc.ncbi.nlm.nih.gov/articles/PMC10393216/',a:['Мета-анализ 25 испытаний, 2023','Meta-analysis of 25 trials, 2023']},
+ {id:'meditate',i:'sp:16',g:'psy',s:2,n:['Медитация 10 минут','Meditate 10 minutes'],w:['Умеренно снижает тревогу, но не лучше других методов, и эффект слабеет через 3–6 месяцев.','Moderately reduces anxiety, but not better than other treatments, and fades after 3–6 months.'],u:'https://pubmed.ncbi.nlm.nih.gov/24395196/',a:['JAMA Internal Medicine 2014, 47 испытаний','JAMA Internal Medicine 2014, 47 trials']},
+ {id:'grat',i:'sp:20',g:'psy',s:1,n:['Записать 3 благодарности','Write 3 things you are grateful for'],w:['Небольшой рост благополучия. Исследования часто с высоким риском ошибок, эффект скромный.','A small boost in well-being. Studies often have high risk of bias; the effect is modest.'],u:'https://pmc.ncbi.nlm.nih.gov/articles/PMC10393216/',a:['Мета-анализ 25 испытаний, 2023','Meta-analysis of 25 trials, 2023']},
  {id:'nosmoke',i:'🚭',g:'psy',s:3,n:['День без сигарет и алкоголя','A day without smoking or alcohol'],w:['Отказ от курения связан со снижением риска смерти примерно на 30%.','Not smoking is linked to about 30% lower risk of death.'],u:'https://neurosciencenews.com/longevity-lifestyle-changes-23685/',a:['AJCN 2024','AJCN 2024']}
 ];
 const sg=id=>SUG.find(x=>x.id==id);
 const K='habit-tracker-v2';
 let D;try{D=JSON.parse(localStorage.getItem(K))}catch(e){}
 if(!D){D={theme:0,lang:(navigator.language||'en').slice(0,2),habits:['water','workout','book','meditate','food'].map(k=>({k,log:{}})),goals:[]}}
-let tab='home',sel=null,edit=false,sugF='all',wk=0,sd=null,gp=[],pk=null,ni='⭐',ng='🎯';
+let tab='home',sel=null,edit=false,sugF='all',wk=0,sd=null,gp=[],pk=null,ni='sp:46',ng='sp:29';
 const LANGS=[['ru','Русский'],['en','English'],['zh','中文'],['es','Español'],['hi','हिन्दी'],['ar','العربية'],['fr','Français'],['pt','Português'],['de','Deutsch'],['ja','日本語'],['tr','Türkçe'],['uk','Українська'],['ko','한국어'],['it','Italiano']];
 if(!LANGS.some(l=>l[0]==D.lang))D.lang='en';
 const KEYS='app today habits home stats goals prof addH addG noH noG left streak days best week theme lang backup save load del replace bad sugBtn sugTitle all rel n0 n1 n2 n3 n4 dw dk db dm df subAdd done missed weekSum pickIcon'.split(' ');
@@ -147,22 +148,7 @@ function mk(s){const p=s.split('|'),o={};KEYS.forEach((k,i)=>o[k]=p[i]);o.m=[o.n
 Object.keys(P).forEach(k=>L[k]=mk(P[k]));
 L.ru.subAdd='Новая подцель…';L.ru.done='Сделано';L.ru.missed='Не сделано';L.ru.weekSum='Итог недели';L.ru.pickIcon='Выбери иконку';
 L.en.subAdd='New sub-item…';L.en.done='Done';L.en.missed='Not done';L.en.weekSum='Week summary';L.en.pickIcon='Pick an icon';
-const ICONS=[
-[['Здоровье','Health'],['❤️','💊','🥛','🍎','🛏️','🩺','🪷','💧']],
-[['Физическое развитие','Fitness'],['🏋️','👟','🚴','🧘','💪','⚽','🏊','🏀']],
-[['Духовное развитие','Spirit'],['🧠','☯️','🪷','📖','🙏','🏯','🌳','🕉️']],
-[['Работа и бизнес','Work'],['💼','💻','📈','🤝','📊','🎯','💰','⏳']],
-[['Обучение и знания','Learning'],['📖','🎧','▶️','💡','🌍','📜','🧩','🔤']],
-[['Продуктивность','Productivity'],['📋','📅','⏱️','⌛','⚙️','✅','⭐','🔥']],
-[['Отдых и развлечения','Leisure'],['🎮','📺','🎬','🎵','📷','✈️','🏝️','🍹']],
-[['Дом и быт','Home'],['🏠','🧹','🧺','🛒','🍲','🪴','🧼','🔧']],
-[['Питание','Food'],['🥗','🥩','🍔','🍕','🍟','☕','🍵','🧁']],
-[['Финансы','Finance'],['👛','💳','🐷','📈','🏦','💰','🪙','📊']],
-[['Путешествия','Travel'],['✈️','🌍','🗺️','🧳','📷','🧭','🏔️','🏝️']],
-[['Творчество и хобби','Creativity'],['🎨','🎸','📷','🖌️','🧶','🌱','🧩','⭐']],
-[['Эмоции и настроение','Mood'],['😊','☀️','🏆','❤️','⭐','🌸','☁️','🌙']],
-[['Напоминания и важное','Reminders'],['🔔','📅','⏰','📌','✉️','🎁','🎂','⚠️']]
-];
+const ICONS=[[['Здоровье','Health'],Array.from({length:8},(_,j)=>'sp:'+(0*8+j))],[['Физическое развитие','Fitness'],Array.from({length:8},(_,j)=>'sp:'+(1*8+j))],[['Духовное развитие','Spirit'],Array.from({length:8},(_,j)=>'sp:'+(2*8+j))],[['Работа и бизнес','Work'],Array.from({length:8},(_,j)=>'sp:'+(3*8+j))],[['Обучение и знания','Learning'],Array.from({length:8},(_,j)=>'sp:'+(4*8+j))],[['Продуктивность','Productivity'],Array.from({length:8},(_,j)=>'sp:'+(5*8+j))],[['Отдых и развлечения','Leisure'],Array.from({length:8},(_,j)=>'sp:'+(6*8+j))],[['Дом и быт','Home'],Array.from({length:8},(_,j)=>'sp:'+(7*8+j))],[['Питание','Food'],Array.from({length:8},(_,j)=>'sp:'+(8*8+j))],[['Финансы','Finance'],Array.from({length:8},(_,j)=>'sp:'+(9*8+j))],[['Путешествия','Travel'],Array.from({length:8},(_,j)=>'sp:'+(10*8+j))],[['Творчество и хобби','Creativity'],Array.from({length:8},(_,j)=>'sp:'+(11*8+j))],[['Эмоции и настроение','Mood'],Array.from({length:8},(_,j)=>'sp:'+(12*8+j))],[['Напоминания и важное','Reminders'],Array.from({length:8},(_,j)=>'sp:'+(13*8+j))]];
 const T=()=>Object.assign({},L.en,L[D.lang]||{});
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(D))}catch(e){}};
 const z=n=>String(n).padStart(2,'0');
@@ -182,9 +168,10 @@ function wkDays(off){const d=new Date(),w=(d.getDay()+6)%7;return[...Array(7)].m
 const cnt=(h,k,tk)=>k<=tk&&(!h.c||k>=h.c||h.log[k]);
 const gl=()=>gp.reduce((l,i)=>l[i].c||(l[i].c=[]),D.goals);
 const gTitle=()=>{let l=D.goals,n='';gp.forEach(i=>{n=l[i].name;l=l[i].c||[]});return n};
-const icoBtn=(ic,target,on)=>on?`<button class="icb" data-pk="${target}">${ic}</button>`:`<span class="ico">${ic}</span>`;
+const ic=(v,z=28)=>{v=String(v);if(v.startsWith('sp:')){const n=+v.slice(3),x=n%8,y=Math.floor(n/8);return `<span class="spi" style="width:${z}px;height:${z}px;background:url(icons.webp) -${x*z}px -${y*z}px/${8*z}px ${14*z}px"></span>`}return v};
+const icoBtn=(v,target,on)=>on?`<button class="icb" data-pk="${target}">${ic(v)}</button>`:`<span class="ico">${ic(v)}</span>`;
 const fd=(d,o)=>d.toLocaleDateString(D.lang,o);
-function pickerHTML(){const t=T(),r=D.lang=='ru'?0:1;return `<div class="ov"><div class="pk"><div class="sect"><b>${t.pickIcon}</b><button class="x" data-pc="1" style="color:#fff">✕</button></div>${ICONS.map(([n,l])=>`<h3>${n[r]}</h3><div class="ig">${l.map(e=>`<button data-pi="${e}">${e}</button>`).join('')}</div>`).join('')}</div></div>`}
+function pickerHTML(){const t=T(),r=D.lang=='ru'?0:1;return `<div class="ov"><div class="pk"><div class="sect"><b>${t.pickIcon}</b><button class="x" data-pc="1" style="color:#fff">✕</button></div>${ICONS.map(([n,l])=>`<h3>${n[r]}</h3><div class="ig">${l.map(e=>`<button data-pi="${e}">${ic(e,38)}</button>`).join('')}</div>`).join('')}</div></div>`}
 function render(){
   const t=T();document.documentElement.lang=D.lang;document.documentElement.dir=D.lang=='ar'?'rtl':'ltr';document.title=t.app;applyTheme();
   const tk=key(new Date());if(!sel)sel=tk;
@@ -199,7 +186,7 @@ function render(){
     h+=`</div><div class="sect"><span>${t.habits}</span><span>${dn}/${n}</span></div><div class="list glass">`;
     if(!n)h+=`<div class="empty">${t.noH}</div>`;
     D.habits.forEach((x,i)=>{h+=`<div class="row">${icoBtn(hi(x),'h:'+i,edit)}<div class="n">${esc(hn(x))}<small>${t.streak}: ${streak(x)} ${t.days}</small></div>${edit?`<button class="x" data-dh="${i}">✕</button>`:''}<button class="chk ${x.log[sel]?'on':''}" data-h="${i}">${x.log[sel]?'✓':''}</button></div>`});
-    h+=`<form class="add" data-f="h"><button type="button" class="icb" data-pk="nh">${ni}</button><input placeholder="${t.addH}" autocomplete="off"><button>+</button></form></div>
+    h+=`<form class="add" data-f="h"><button type="button" class="icb" data-pk="nh">${ic(ni)}</button><input placeholder="${t.addH}" autocomplete="off"><button>+</button></form></div>
     <button class="btn" style="width:100%;margin-top:12px" data-tab="sug">💡 ${t.sugBtn}</button>`;
   }else if(tab=='sug'){
     const ru=D.lang=='ru',lv=ru?['','Слабая','Средняя','Хорошая']:['','Weak','Medium','Good'];
@@ -207,7 +194,7 @@ function render(){
     <div class="week" style="flex-wrap:wrap">`+[['all',t.all],...Object.entries(GR).map(([k,v])=>[k,v[ru?0:1]])].map(([k,l])=>`<button data-sf="${k}" class="${sugF==k?'sel':''}" style="flex:none;padding:8px 14px;font-size:14px">${l}</button>`).join('')+`</div>`;
     SUG.filter(x=>sugF=='all'||x.g==sugF).forEach(x=>{
       const has=D.habits.some(y=>y.s==x.id||y.k==x.id);
-      h+=`<div class="glass" style="padding:12px 14px;margin-bottom:10px"><div style="display:flex;gap:10px;align-items:center"><span style="font-size:24px">${x.i}</span><b style="flex:1">${x.n[ru?0:1]}</b><button class="btn" data-add="${x.id}" ${has?'disabled style="opacity:.5"':''}>${has?'✓':'+'}</button></div>
+      h+=`<div class="glass" style="padding:12px 14px;margin-bottom:10px"><div style="display:flex;gap:10px;align-items:center">${ic(x.i,32)}<b style="flex:1">${x.n[ru?0:1]}</b><button class="btn" data-add="${x.id}" ${has?'disabled style="opacity:.5"':''}>${has?'✓':'+'}</button></div>
       <div style="font-size:13px;opacity:.85;margin-top:8px">${x.w[ru?0:1]}</div>
       <div style="font-size:12px;opacity:.65;margin-top:6px">${t.rel}: ${lv[x.s]} · <a href="${x.u}" target="_blank" rel="noopener" style="color:var(--ac)">${x.a[ru?0:1]}</a></div></div>`});
     h+=`<div style="font-size:12px;opacity:.6;margin:8px 4px 16px">${t.disc}</div>`;
@@ -224,12 +211,12 @@ function render(){
     h+=`</div><div class="sect"><span>${fd(sdd,{weekday:'long',day:'numeric',month:'long'})}</span><span>${da}/${db}</span></div><div class="list glass">`;
     const hs=D.habits.filter(x=>cnt(x,sd,tk)),dn=hs.filter(x=>x.log[sd]),ms=hs.filter(x=>!x.log[sd]);
     if(!hs.length)h+=`<div class="empty">–</div>`;
-    dn.forEach(x=>{h+=`<div class="dayrow"><span class="ok">✓</span><span class="ico">${hi(x)}</span><span style="flex:1">${esc(hn(x))}</span><small class="ok">${t.done}</small></div>`});
-    ms.forEach(x=>{h+=`<div class="dayrow"><span class="no">✗</span><span class="ico">${hi(x)}</span><span style="flex:1">${esc(hn(x))}</span><small class="no">${t.missed}</small></div>`});
+    dn.forEach(x=>{h+=`<div class="dayrow"><span class="ok">✓</span><span class="ico">${ic(hi(x))}</span><span style="flex:1">${esc(hn(x))}</span><small class="ok">${t.done}</small></div>`});
+    ms.forEach(x=>{h+=`<div class="dayrow"><span class="no">✗</span><span class="ico">${ic(hi(x))}</span><span style="flex:1">${esc(hn(x))}</span><small class="no">${t.missed}</small></div>`});
     h+=`</div><div class="sect" style="margin-top:14px"><span>${t.weekSum}</span><span>${wp}%</span></div><div class="list glass">`;
     if(!D.habits.length)h+=`<div class="empty">${t.noH}</div>`;
     D.habits.forEach(x=>{let c=0,n=0;keys.forEach(k=>{if(cnt(x,k,tk)){n++;if(x.log[k])c++}});
-      h+=`<div class="row"><span class="ico">${hi(x)}</span><div class="n">${esc(hn(x))}<small>${c}/${n} · ${t.best}: ${best(x)} ${t.days}</small><div class="bar"><i style="width:${n?c/n*100:0}%"></i></div></div></div>`});
+      h+=`<div class="row"><span class="ico">${ic(hi(x))}</span><div class="n">${esc(hn(x))}<small>${c}/${n} · ${t.best}: ${best(x)} ${t.days}</small><div class="bar"><i style="width:${n?c/n*100:0}%"></i></div></div></div>`});
     h+='</div>';
   }else if(tab=='goals'){
     const L2=gl(),open=L2.filter(x=>!x.d).length;
@@ -238,7 +225,7 @@ function render(){
     if(!L2.length)h+=`<div class="empty">${t.noG}</div>`;
     L2.forEach((x,i)=>{const c=x.c||[],cd=c.filter(y=>y.d).length;
       h+=`<div class="row ${x.d?'done':''}"><button class="chk ${x.d?'on':''}" data-g="${i}">${x.d?'✓':''}</button>${icoBtn(x.i||'🎯','g:'+i,edit)}<div class="n" data-go="${i}" style="cursor:pointer">${esc(x.name)}${c.length?`<small>${cd}/${c.length}</small>`:''}</div>${edit?`<button class="x" data-dg="${i}">✕</button>`:`<span class="chev" data-go="${i}">›</span>`}</div>`});
-    h+=`<form class="add" data-f="g"><button type="button" class="icb" data-pk="ng">${ng}</button><input placeholder="${gp.length?t.subAdd:t.addG}" autocomplete="off"><button>+</button></form></div>`;
+    h+=`<form class="add" data-f="g"><button type="button" class="icb" data-pk="ng">${ic(ng)}</button><input placeholder="${gp.length?t.subAdd:t.addG}" autocomplete="off"><button>+</button></form></div>`;
   }else{
     h+=`<div class="top"><span style="width:40px"></span><h1>${t.prof}</h1><span style="width:40px"></span></div>
     <h3>${t.theme}</h3><div class="themes glass">`;
@@ -281,8 +268,8 @@ app.addEventListener('click',e=>{
 });
 app.addEventListener('submit',e=>{
   e.preventDefault();const f=e.target,v=f.querySelector('input').value.trim();if(!v)return;
-  if(f.dataset.f=='h'){D.habits.push({name:v,i:ni,log:{},c:key(new Date())});ni='⭐'}
-  else{gl().push({name:v,d:false,i:ng,c:[]});ng='🎯'}
+  if(f.dataset.f=='h'){D.habits.push({name:v,i:ni,log:{},c:key(new Date())});ni='sp:46'}
+  else{gl().push({name:v,d:false,i:ng,c:[]});ng='sp:29'}
   save();render();
 });
 app.addEventListener('change',e=>{
