@@ -155,6 +155,8 @@ Object.keys(P).forEach(k=>L[k]=mk(P[k]));
 L.ru.subAdd='Новая подцель…';L.ru.done='Сделано';L.ru.missed='Не сделано';L.ru.weekSum='Итог недели';L.ru.pickIcon='Выбери иконку';
 L.ru.chIcon='Сменить иконку';L.ru.rename='Переименовать';L.ru.remove='Удалить';L.ru.noSub='Пока нет подпунктов';
 L.en.chIcon='Change icon';L.en.rename='Rename';L.en.remove='Delete';L.en.noSub='No sub-items yet';
+L.ru.habits='Привычки';L.ru.tasks='Мои задачи на день';L.ru.addT='Новая задача…';L.ru.noT='Добавь задачу на этот день';
+L.en.habits='Habits';L.en.tasks='My tasks for the day';L.en.addT='New task…';L.en.noT='Add a task for this day';
 L.ru.remind='Напоминание';L.ru.reward='Награда';L.ru.rewardIs='Твоя награда';L.ru.dlApp='Скачать приложение для Android';
 L.ru.rewardAsk='Что ты получишь, когда выполнишь цель? (пусто — убрать)';L.ru.remindSet='Во сколько напоминать каждый день?';L.ru.remindOff='Выключить';L.ru.remindSave='Сохранить';L.ru.notifH='Пора отметить привычку';L.ru.notifG='Пора заняться целью';
 L.ru.remHint='Напоминания приходят каждый день в выбранное время. В установленном приложении они надёжные, в браузере приходят только пока страница открыта.';L.ru.wdHint='Виджет: удерживай палец на главном экране, затем «Виджеты» и «Habit Tracker».';L.ru.remTitle='Приложение, напоминания, виджет';
@@ -223,13 +225,18 @@ function render(){
     sb.forEach((y,j)=>{h+=`<div class="row ${y.log[sel]?'done':''}"><button class="chk ${y.log[sel]?'on':''}" data-sc="${j}">${y.log[sel]?'✓':''}</button><div class="n">${esc(y.name)}</div><button class="x" data-sx="${j}">✕</button></div>`});
     h+=`<form class="add" data-f="s"><input placeholder="${t.subAdd}" autocomplete="off"><button>+</button></form></div>`;
   }else if(tab=='home'){
-    const n=D.habits.length,dn=D.habits.filter(x=>x.log[sel]).length,p=n?Math.round(dn/n*100):0;
+    const tl=D.tasks.filter(x=>x.d==sel),tdn=tl.filter(x=>x.done).length;
+    const n=D.habits.length,dn=D.habits.filter(x=>x.log[sel]).length,p=(n+tl.length)?Math.round((dn+tdn)/(n+tl.length)*100):0;
     const mi=Math.min(4,Math.floor(p/25)),R=56,C=2*Math.PI*R;
     h+=`<div class="top"><span style="width:40px"></span><h1>${t.app}</h1><button class="ib" data-tab="prof">⚙</button></div>
     <div class="hero"><div class="ring"><svg width="132" height="132"><circle cx="66" cy="66" r="${R}" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="10"/><circle cx="66" cy="66" r="${R}" fill="none" stroke="var(--ac)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C*p/100} ${C}"/></svg><div class="tx"><b>${p}%</b><span>${t.today}</span></div></div>
     <div><h2>${t.m[mi]}</h2><p>${t.m2[mi]}</p></div></div><div class="week">`;
     wkDays(0).forEach(d=>{const k=key(d);h+=`<button data-d="${k}" class="${k==sel?'sel':''}" ${k>tk?'disabled':''}>${fd(d,{weekday:'short'})}<b>${d.getDate()}</b></button>`});
-    h+=`</div><div class="sect"><span>${t.habits}</span><span>${dn}/${n}</span></div><div class="list glass">`;
+    h+=`</div><div class="sect"><span>${t.tasks}</span><span>${tdn}/${tl.length}</span></div><div class="list glass">`;
+    if(!tl.length)h+=`<div class="empty">${t.noT}</div>`;
+    D.tasks.forEach((x,i)=>{if(x.d!=sel)return;h+=`<div class="row ${x.done?'done':''}"><div class="n">${esc(x.name)}</div><button class="x" data-tx="${i}">✕</button><button class="chk ${x.done?'on':''}" data-tk="${i}">${x.done?'✓':''}</button></div>`});
+    h+=`<form class="add" data-f="t"><input placeholder="${t.addT}" autocomplete="off"><button>+</button></form></div>
+    <div class="sect" style="margin-top:22px"><span>${t.habits}</span><span>${dn}/${n}</span></div><div class="list glass">`;
     if(!n)h+=`<div class="empty">${t.noH}</div>`;
     D.habits.forEach((x,i)=>{const sb=x.sub||[],sc=sb.filter(y=>y.log[sel]).length;h+=`<div class="row"><span class="ico">${ic(hi(x))}</span><div class="n" data-hd="${i}" style="cursor:pointer">${esc(hn(x))}<small>${t.streak}: ${streak(x)} ${t.days}${sb.length?` · ${sc}/${sb.length}`:''}${x.rm?` · ⏰ ${x.rm}`:''}</small></div><button class="mb" data-mn="h:${i}">⋯</button><button class="chk ${x.log[sel]?'on':''}" data-h="${i}">${x.log[sel]?'✓':''}</button></div>`});
     h+=`<form class="add" data-f="h"><button type="button" class="icb" data-pk="nh">${ic(ni)}</button><input placeholder="${t.addH}" autocomplete="off"><button>+</button></form></div>
@@ -306,6 +313,8 @@ app.addEventListener('click',e=>{
     else if(d.mc=='reward'){const v=prompt(T().rewardAsk,o.r||'');mn=null;if(v!==null){o.r=v.trim()||undefined}}
     else if(d.mc=='rename'){const v=prompt(T().rename,ty=='h'?hn(o):o.name);mn=null;if(v&&v.trim()){if(ty=='h'){o.i=hi(o);delete o.k;delete o.s}o.name=v.trim()}}
     else if(d.mc=='del'){if(confirm(T().del)){arr.splice(i,1);if(ty=='h')hd=null}mn=null}}
+  else if(d.tk!==undefined){const x=D.tasks[d.tk];x.done=!x.done}
+  else if(d.tx!==undefined)D.tasks.splice(d.tx,1);
   else if(d.hd!==undefined)hd=+d.hd;
   else if(d.hb)hd=null;
   else if(d.sc!==undefined){const l=D.habits[hd].sub[d.sc].log;l[sel]?delete l[sel]:l[sel]=1}
@@ -333,16 +342,18 @@ app.addEventListener('click',e=>{
 app.addEventListener('submit',e=>{
   e.preventDefault();const f=e.target,v=f.querySelector('input').value.trim();if(!v)return;
   if(f.dataset.f=='s')D.habits[hd].sub.push({name:v,log:{}});
+  else if(f.dataset.f=='t')D.tasks.push({name:v,d:sel,done:false});
   else if(f.dataset.f=='h'){D.habits.push({name:v,i:ni,log:{},c:key(new Date())});ni='sp:46'}
   else{gl().push({name:v,d:false,i:ng,c:[]});ng='sp:28'}
   save();render();
 });
 app.addEventListener('change',e=>{
   if(e.target.id!='file')return;const r=new FileReader();
-  r.onload=()=>{try{const j=JSON.parse(r.result);if(j.habits&&j.goals&&confirm(T().replace)){D=j;if(!LANGS.some(l=>l[0]==D.lang))D.lang='en';save();render()}}catch(x){alert(T().bad)}};
+  r.onload=()=>{try{const j=JSON.parse(r.result);if(j.habits&&j.goals&&confirm(T().replace)){D=j;if(!D.tasks)D.tasks=[];if(!LANGS.some(l=>l[0]==D.lang))D.lang='en';save();render()}}catch(x){alert(T().bad)}};
   r.readAsText(e.target.files[0]);
 });
 D.habits.forEach(h=>{if(!h.c)h.c=key(new Date())});
+if(!D.tasks)D.tasks=[];
 setTimeout(()=>{pushWidget();syncRem()},1500);
 render();
 if(!NATIVE&&'serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
