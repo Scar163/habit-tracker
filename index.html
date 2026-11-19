@@ -129,7 +129,7 @@ const K='habit-tracker-v2';
 let D;try{D=JSON.parse(localStorage.getItem(K))}catch(e){}
 if(!D){D={theme:0,lang:(navigator.language||'en').slice(0,2),habits:[],goals:[]}}
 let hw=0,tab='home',sel=null,edit=false,hd=null,mn=null,rv=null,tm='',sugF='all',wk=0,sd=null,gp=[],pk=null,ni='sp:46',ng='sp:28';
-const LANGS=[['ru','Русский'],['en','English'],['zh','中文'],['es','Español'],['hi','हिन्दी'],['ar','العربية'],['fr','Français'],['pt','Português'],['de','Deutsch'],['ja','日本語'],['tr','Türkçe'],['uk','Українська'],['ko','한국어'],['it','Italiano']];
+const LANGS=[['ru','Русский'],['en','English'],['es','Español']];
 if(!LANGS.some(l=>l[0]==D.lang))D.lang='en';
 const KEYS='app today habits home stats goals prof addH addG noH noG left streak days best week theme lang backup save load del replace bad sugBtn sugTitle all rel n0 n1 n2 n3 n4 dw dk db dm df subAdd done missed weekSum pickIcon chIcon rename remove noSub remind reward rewardIs dlApp'.split(' ');
 const P={
@@ -159,6 +159,7 @@ L.ru.habits='Привычки';L.ru.tasks='Мои задачи на день';L.
 L.en.habits='Habits';L.en.tasks='My tasks for the day';L.en.addT='New task…';L.en.noT='Add a task for this day';
 L.ru.addCal='Добавить в календарь (каждый день)';L.en.addCal='Add to calendar (every day)';
 L.ru.ownBg='Свой фон из фото';L.en.ownBg='Use my own photo as background';L.ru.bgReset='Сбросить';L.en.bgReset='Reset';
+L.es.tasks='Mis tareas del día';L.es.addT='Nueva tarea…';L.es.noT='Añade una tarea para este día';L.es.habits='Hábitos';L.es.ownBg='Mi propia foto de fondo';L.es.bgReset='Restablecer';L.es.addCal='Añadir al calendario (cada día)';
 L.ru.remind='Напоминание';L.ru.reward='Награда';L.ru.rewardIs='Твоя награда';L.ru.dlApp='Скачать приложение для Android';
 L.ru.rewardAsk='Что ты получишь, когда выполнишь цель? (пусто — убрать)';L.ru.remindSet='Во сколько напоминать каждый день?';L.ru.remindOff='Выключить';L.ru.remindSave='Сохранить';L.ru.notifH='Пора отметить привычку';L.ru.notifG='Пора заняться целью';
 L.ru.remHint='Напоминания приходят каждый день в выбранное время. В установленном приложении они надёжные, в браузере приходят только пока страница открыта.';L.ru.wdHint='Виджет: удерживай палец на главном экране, затем «Виджеты» и «Habit Tracker».';L.ru.remTitle='Приложение, напоминания, виджет';
@@ -219,7 +220,7 @@ function render(){
   const t=T();document.documentElement.lang=D.lang;document.documentElement.dir=D.lang=='ar'?'rtl':'ltr';document.title=t.app;applyTheme();
   const tk=key(new Date());if(!sel)sel=tk;
   let h='';
-  if(tab=='home'&&hd!==null&&D.habits[hd]){
+  if(tab=='habits'&&hd!==null&&D.habits[hd]){
     const x=D.habits[hd],sb=x.sub||(x.sub=[]),dn=sb.filter(y=>y.log[sel]).length;
     h+=`<div class="top"><button class="ib" data-hb="1">←</button><h1>${esc(hn(x))}</h1><button class="ib" data-mn="h:${hd}">⋯</button></div>
     <div class="hero" style="margin:4px 4px 12px">${ic(hi(x),56)}<div><h2>${sb.length?dn+'/'+sb.length:''}</h2><p>${t.streak}: ${streak(x)} ${t.days}</p></div></div><div class="week">`;
@@ -230,7 +231,7 @@ function render(){
     h+=`<form class="add" data-f="s"><input placeholder="${t.subAdd}" autocomplete="off"><button>+</button></form></div>`;
   }else if(tab=='home'){
     const tl=D.tasks.filter(x=>x.d==sel),tdn=tl.filter(x=>x.done).length;
-    const n=D.habits.length,dn=D.habits.filter(x=>x.log[sel]).length,p=(n+tl.length)?Math.round((dn+tdn)/(n+tl.length)*100):0;
+    const p=tl.length?Math.round(tdn/tl.length*100):0;
     const mi=Math.min(4,Math.floor(p/25)),R=56,C=2*Math.PI*R;
     h+=`<div class="top"><span style="width:40px"></span><h1>${t.app}</h1><button class="ib" data-tab="prof">⚙</button></div>
     <div class="hero"><div class="ring"><svg width="132" height="132"><circle cx="66" cy="66" r="${R}" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="10"/><circle cx="66" cy="66" r="${R}" fill="none" stroke="var(--ac)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C*p/100} ${C}"/></svg><div class="tx"><b>${p}%</b><span>${t.today}</span></div></div>
@@ -240,15 +241,20 @@ function render(){
     h+=`</div><div class="sect"><span>${t.tasks}</span><span>${tdn}/${tl.length}</span></div><div class="list glass">`;
     if(!tl.length)h+=`<div class="empty">${t.noT}</div>`;
     D.tasks.forEach((x,i)=>{if(x.d!=sel)return;h+=`<div class="row ${x.done?'done':''}"><div class="n">${esc(x.name)}</div><button class="x" data-tx="${i}">✕</button><button class="chk ${x.done?'on':''}" data-tk="${i}">${x.done?'✓':''}</button></div>`});
-    h+=`<form class="add" data-f="t"><input placeholder="${t.addT}" autocomplete="off"><button>+</button></form></div>
-    <div class="sect" style="margin-top:22px"><span>${t.habits}</span><span>${dn}/${n}</span></div><div class="list glass">`;
+    h+=`<form class="add" data-f="t"><input placeholder="${t.addT}" autocomplete="off"><button>+</button></form></div>`;
+  }else if(tab=='habits'){
+    const n=D.habits.length,dn=D.habits.filter(x=>x.log[sel]).length;
+    h+=`<div class="top"><span style="width:40px"></span><h1>${t.habits}</h1><span style="width:40px"></span></div>`;
+    const ds=wkDays(hw);h+=`<div class="wk"><button class="ib" data-hw="-1">‹</button><b>${fd(ds[0],{day:'numeric',month:'short'})} – ${fd(ds[6],{day:'numeric',month:'short'})}</b><button class="ib" data-hw="1" ${hw>=0?'disabled style="opacity:.4"':''}>›</button></div><div class="week">`;
+    ds.forEach(d=>{const k=key(d);h+=`<button data-d="${k}" class="${k==sel?'sel':''}" ${k>tk?'disabled':''}>${fd(d,{weekday:'short'})}<b>${d.getDate()}</b></button>`});
+    h+=`</div><div class="sect"><span>${t.habits}</span><span>${dn}/${n}</span></div><div class="list glass">`;
     if(!n)h+=`<div class="empty">${t.noH}</div>`;
     D.habits.forEach((x,i)=>{const sb=x.sub||[],sc=sb.filter(y=>y.log[sel]).length;h+=`<div class="row"><span class="ico">${ic(hi(x))}</span><div class="n" data-hd="${i}" style="cursor:pointer">${esc(hn(x))}<small>${t.streak}: ${streak(x)} ${t.days}${sb.length?` · ${sc}/${sb.length}`:''}${x.rm?` · ⏰ ${x.rm}`:''}</small></div><button class="mb" data-mn="h:${i}">⋯</button><button class="chk ${x.log[sel]?'on':''}" data-h="${i}">${x.log[sel]?'✓':''}</button></div>`});
     h+=`<form class="add" data-f="h"><button type="button" class="icb" data-pk="nh">${ic(ni)}</button><input placeholder="${t.addH}" autocomplete="off"><button>+</button></form></div>
     <button class="btn" style="width:100%;margin-top:12px" data-tab="sug">💡 ${t.sugBtn}</button>`;
   }else if(tab=='sug'){
     const ru=D.lang=='ru',lv=ru?['','Слабая','Средняя','Хорошая']:['','Weak','Medium','Good'];
-    h+=`<div class="top"><button class="ib" data-tab="home">←</button><h1>${t.sugTitle}</h1><span style="width:40px"></span></div>
+    h+=`<div class="top"><button class="ib" data-tab="habits">←</button><h1>${t.sugTitle}</h1><span style="width:40px"></span></div>
     <div class="week" style="flex-wrap:wrap">`+[['all',t.all],...Object.entries(GR).map(([k,v])=>[k,v[ru?0:1]])].map(([k,l])=>`<button data-sf="${k}" class="${sugF==k?'sel':''}" style="flex:none;padding:8px 14px;font-size:14px">${l}</button>`).join('')+`</div>`;
     SUG.filter(x=>sugF=='all'||x.g==sugF).forEach(x=>{
       const has=D.habits.some(y=>y.s==x.id||y.k==x.id);
@@ -298,7 +304,7 @@ function render(){
   if(rv)h+=remindHTML();
   if(tm)h+=`<div class="toast">🎉 ${esc(tm)}</div>`;
   m.innerHTML=h;
-  nav.innerHTML=[['home','sp:56',t.home],['stats','sp:25',t.stats],['goals','sp:98',t.goals],['prof','sp:96',t.prof]].map(([k,i,l])=>`<button data-tab="${k}" class="${tab==k?'a':''}"><i>${ic(i,26)}</i>${l}</button>`).join('');
+  nav.innerHTML=[['home','sp:56',t.home],['habits','sp:45',t.habits],['stats','sp:25',t.stats],['goals','sp:98',t.goals],['prof','sp:96',t.prof]].map(([k,i,l])=>`<button data-tab="${k}" class="${tab==k?'a':''}"><i>${ic(i,26)}</i>${l}</button>`).join('');
 }
 const m=document.getElementById('m'),nav=document.getElementById('nav');
 const app=document.getElementById('app');
@@ -327,7 +333,7 @@ app.addEventListener('click',e=>{
   else if(d.hb)hd=null;
   else if(d.sc!==undefined){const l=D.habits[hd].sub[d.sc].log;l[sel]?delete l[sel]:l[sel]=1}
   else if(d.sx!==undefined)D.habits[hd].sub.splice(d.sx,1);
-  else if(d.tab){tab=d.tab;if(tab=='home')hd=null}
+  else if(d.tab){tab=d.tab;if(tab=='home'||tab=='habits')hd=null}
   else if(d.d)sel=d.d;
   else if(d.sd)sd=d.sd;
   else if(d.wk){wk=Math.min(0,wk+ +d.wk);sd=null}
